@@ -290,8 +290,8 @@ class DescompresorHuffman:
 
         # Leemos el árbol serializado
         serialized_tree_binary = archivo_comprimido.read(len_tree)
-        serialized_tree_str = string_to_binary(serialized_tree_binary)
         print("serialized_tree: " + serialized_tree_binary)
+        serialized_tree_str = string_to_binary(serialized_tree_binary)
         print("binary version:" + serialized_tree_str)
 
         # Reconstruimos el árbol de Huffman
@@ -302,25 +302,23 @@ class DescompresorHuffman:
         nodo_actual = arbol_huffman
 
         # Leemos el resto del archivo comprimido
-        bits = archivo_comprimido.read()
+        bytes = archivo_comprimido.read()
+        bits = string_to_binary(bytes)
 
         # Abrimos el archivo de salida para escribir los datos descomprimidos
         nombre_archivo, _ = os.path.splitext(self.ruta_archivo_comprimido)
-        archivo_descomprimido = open(nombre_archivo, 'wb')
+        archivo_descomprimido = open(nombre_archivo + "TEST", 'wb')
 
         # Recorremos los bits y descomprimimos
         for bit in bits:
-            for i in range(8):
-                # Descendemos por el árbol de Huffman según los bits
-                if (ord(bit) >> (7 - i)) & 1:
-                    nodo_actual = nodo_actual.derecha
-                else:
-                    nodo_actual = nodo_actual.izquierda
+            if bit == '0':
+                nodo_actual = nodo_actual.izquierda
+            else:
+                nodo_actual = nodo_actual.derecha
 
-                # Si llegamos a una hoja, escribimos el byte correspondiente
-                if nodo_actual.byte is not None:
-                    archivo_descomprimido.write(nodo_actual.byte)
-                    nodo_actual = arbol_huffman  # Volvemos a la raíz del árbol
+            if nodo_actual.byte is not None:
+                archivo_descomprimido.write(nodo_actual.byte)
+                nodo_actual = arbol_huffman
 
         archivo_comprimido.close()
         archivo_descomprimido.close()
@@ -331,6 +329,11 @@ def descomprimir_archivo_huffman(ruta_archivo_comprimido):
 
 def string_to_binary(s):
     return ''.join(''.join(str((ord(c) >> i) & 1) for i in range(7, -1, -1)) for c in s)
+
+def access_bit(data, num):
+    base = int(num // 8)
+    shift = int(num % 8)
+    return (data[base] & (1 << shift)) >> shift
 
 # Recibe dos argumentos:
 # - Flag que indica si se va a comprimir o descomprimir: -c para comprimir, -d para descomprimir
