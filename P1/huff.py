@@ -4,6 +4,9 @@ import os, sys, struct
 
 def int_to_4bytes(int_value):
     return struct.pack('>I', int_value)
+
+def bytes4_to_int(bytes):
+    return struct.unpack('>I', bytes)[0]
     
 
 """
@@ -67,13 +70,14 @@ class CompresorHuffman:
 
         return cola_prioridad[0]
 
-    def imprimir_arbol(self, raiz, nivel=0):
+    @staticmethod
+    def imprimir_arbol(raiz, nivel=0):
         if raiz is not None:
-            self.imprimir_arbol(raiz.derecha, nivel + 1)
+            CompresorHuffman.imprimir_arbol(raiz.derecha, nivel + 1)
             if raiz.byte is None: byte = ''
             else: byte = raiz.byte
             print(' ' * nivel * 6 + '->' + byte + ' ' + str(raiz.frecuencia))
-            self.imprimir_arbol(raiz.izquierda, nivel + 1)
+            CompresorHuffman.imprimir_arbol(raiz.izquierda, nivel + 1)
 
     '''
         - Este método genera los códigos binarios para cada byte en el árbol de Huffman.
@@ -131,7 +135,6 @@ class CompresorHuffman:
     def generar_cabecera(self, root):
         # La cabecera es el árbol serializado con la longitud del árbol al principio
         arbol_serializado = self.binary_tree_to_bytes(root)
-        print("arbol serializado:" + arbol_serializado)
         len_arbol_serializado_bytes = int_to_4bytes(len(arbol_serializado))
         return len_arbol_serializado_bytes + arbol_serializado
 
@@ -172,14 +175,47 @@ class CompresorHuffman:
         archivo.close()
         archivo_comprimido.close()
 
+def info_arbol_huffman(arbol_huffman,):
+
+    def helper(node, depth):
+        if node is None:
+            return 0, 0
+        if node.byte is not None:
+            return 1, depth
+        left = helper(node.izquierda, depth + 1)
+        right = helper(node.derecha, depth + 1)
+        return left[0] + right[0], max(left[1], right[1])
+    
+    nodos, profundidad = helper(arbol_huffman, 0)
+
+    # Se va a calcular el porcentaje de nodos hoja a cada profundidad
+    total_leafs_per_depth = [0] * (profundidad + 1)
+    def helper_depths_percentages(node, depth):
+        if node is None:
+            return
+        if node.byte is not None:
+            total_leafs_per_depth[depth] += 1
+        helper_depths_percentages(node.izquierda, depth + 1)
+        helper_depths_percentages(node.derecha, depth + 1)
+    helper_depths_percentages(arbol_huffman, 0)
+
+    percentages_per_depth = [total_leafs_per_depth[i] / nodos * 100 for i in range(profundidad + 1)]
+
+    for i in range(profundidad + 1):
+        print("Profundidad " + str(i) + ": " + str(percentages_per_depth[i]) + "%")
+
+    print("Profundidad máxima: " + str(profundidad))
+
+    print("Arbol"); CompresorHuffman.imprimir_arbol(arbol_huffman)
 
 # Crea una instancia del CompresorHuffman, cuenta las frecuencias, construye el árbol, genera los códigos y comprime el archivo.
 def comprimir_archivo_huffman(ruta_archivo, ruta_archivo_comprimido):
     compresor = CompresorHuffman(ruta_archivo)
     arbol_huffman = compresor.construir_arbol()
-    compresor.imprimir_arbol(arbol_huffman)
     tabla_codigos = compresor.generar_codigos(arbol_huffman)
     compresor.comprimir_archivo(ruta_archivo_comprimido, tabla_codigos, arbol_huffman)
+
+    info_arbol_huffman(arbol_huffman)
 
 # byte_to_str(ord(a)) = "01100001"
 # It converts a byte to its str form with all 8 bits, including starting zeros
@@ -223,18 +259,19 @@ class DescompresorHuffman:
     def descomprimir_archivo(self):
         archivo_comprimido = open(self.ruta_archivo_comprimido, 'rb')
         # Leemos la longitud del árbol serializado
-        len_tree = struct.unpack('>I', archivo_comprimido.read(4))[0]
+        # len_tree = struct.unpack('>I', archivo_comprimido.read(4))[0]
+        len_tree = bytes4_to_int(archivo_comprimido.read(4))
         print("len_tree: " + str(len_tree))
 
         # Leemos el árbol serializado
         serialized_tree_binary = archivo_comprimido.read(len_tree)
-        print("serialized_tree: " + serialized_tree_binary)
+        # print("serialized_tree: " + serialized_tree_binary)
         serialized_tree_str = string_to_binary(serialized_tree_binary)
-        print("binary version:" + serialized_tree_str)
+        # print("binary version:" + serialized_tree_str)
 
         # Reconstruimos el árbol de Huffman
         arbol_huffman = self.deserialize_huffman_tree(serialized_tree_str)
-        CompresorHuffman.imprimir_arbol(CompresorHuffman(''), arbol_huffman)
+        # CompresorHuffman.imprimir_arbol(CompresorHuffman(''), arbol_huffman)
 
         # Inicializamos el nodo actual como la raíz del árbol
         nodo_actual = arbol_huffman
