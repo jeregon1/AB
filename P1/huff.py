@@ -1,12 +1,9 @@
 # coding=utf-8
 from heapq import heapify, heappop, heappush
-import os, sys
+import os, sys, struct
 
 def int_to_4bytes(int_value):
-    return ''.join([chr((int_value >> 24) & 0xFF),
-                    chr((int_value >> 16) & 0xFF),
-                    chr((int_value >> 8) & 0xFF),
-                    chr(int_value & 0xFF)])
+    return struct.pack('>I', int_value)
     
 
 """
@@ -14,11 +11,11 @@ def int_to_4bytes(int_value):
     en el texto y dos referencias a sus nodos hijos (izquierda y derecha).
 """
 class NodoHuffman:
-    def __init__(self, byte=None, frecuencia=None):
+    def __init__(self, byte=None, frecuencia=None, izquierda=None, derecha=None):
         self.byte = byte  # Byte del nodo
         self.frecuencia = frecuencia  # Frecuencia del byte
-        self.izquierda = None  # Nodo hijo izquierdo
-        self.derecha = None  # Nodo hijo derecho
+        self.izquierda = izquierda  # Nodo hijo izquierdo
+        self.derecha = derecha # Nodo hijo derecho
 
     def __cmp__(self, other):
         if self.frecuencia < other.frecuencia:
@@ -100,11 +97,9 @@ class CompresorHuffman:
     def serialize_huffman_tree(self, node):
         if node is None:
             return ''
-
-        if node.byte is not None: # Si es hoja
+        elif node.byte is not None: # Leaf node
             return '1' + byte_to_str(ord(node.byte))
-        else:
-            # If the node is not a leaf node, the first bit is 0
+        else: # Internal node
             return '0' + self.serialize_huffman_tree(node.izquierda) + self.serialize_huffman_tree(node.derecha)
 
     # Function that converts the binary serialized tree into its bits represenntation
@@ -127,6 +122,7 @@ class CompresorHuffman:
             bytes += chr(byte)
             binary = binary[8:]
         return bytes
+#                   01011000 01001011 00011101 10001000 10110011 01011001 01101100 10000000
 # cabecera ejemplo: 01011000 01001011 00011101 10001000 10110011 01011001 01101100 100
 # XK��Yl�
 
@@ -229,18 +225,20 @@ def comprimir_archivo_huffman(ruta_archivo, ruta_archivo_comprimido):
 
 # byte_to_str(ord(a)) = "01100001"
 # It converts a byte to its str form with all 8 bits, including starting zeros
-def byte_to_str(byte_value):
-    binary_str = ''.join(str((byte_value >> i) & 1) for i in range(7, -1, -1))  # Convert byte to binary string
+def byte_to_str(byte):
+    binary_str = ''.join(str((byte >> i) & 1) for i in range(7, -1, -1))  # Convert byte to binary string
     padded_str = binary_str.zfill(8)  # Pad the binary string with leading zeros
     return padded_str
+    
+def str_to_char(s):
+    """Convert a binary string to a char."""
+    return chr(int(s, 2))
 
 
-class DescompresorHuffman:
-    def __init__(self, ruta_archivo_comprimido):
-        self.ruta_archivo_comprimido = ruta_archivo_comprimido
-
-    # Función para reconstruir el árbol de Huffman a partir de la información serializada
-    def reconstruir_arbol(self, serialized_tree):
+"""     
+def reconstruir_arbol(self, serialized_tree):
+        # index es una lista para que pueda sea global dentro de reconstruir_arbol.
+        # Por ello solo se utiliza la primera componente, como si fuera un tipo int
         index = [0]
 
         def reconstruir_helper():
@@ -255,31 +253,60 @@ class DescompresorHuffman:
                 right = reconstruir_helper()
                 return NodoHuffman(frecuencia=left.frecuencia + right.frecuencia, izquierda=left, derecha=right)
 
-        return reconstruir_helper()
+        return reconstruir_helper() 
+"""
+class DescompresorHuffman:
+    def __init__(self, ruta_archivo_comprimido):
+        self.ruta_archivo_comprimido = ruta_archivo_comprimido
+
+    # Función para reconstruir el árbol de Huffman a partir de la información serializada
+    def deserialize_huffman_tree(self, s):
+        """Deserialize a Huffman tree from a string."""
+        def helper(bits):
+            if len(bits) == 0:
+                return None
+
+            bit = bits.pop(0)
+            if bit == '1':
+                # Convert the next 8 bits to a character
+                byte = str_to_char(''.join(bits[:8]))
+                del bits[:8]
+                return NodoHuffman(byte)
+            else: # '0'
+                left = helper(bits)
+                right = helper(bits)
+                return NodoHuffman(izquierda=left, derecha=right)
+
+        # Convert the string to a list of bits
+        bits = list(s)
+        return helper(bits)
 
     # Función para descomprimir el archivo comprimido usando el árbol de Huffman reconstruido
     def descomprimir_archivo(self):
         archivo_comprimido = open(self.ruta_archivo_comprimido, 'rb')
         # Leemos la longitud del árbol serializado
-        len_tree = 0
-        for i in range(4):
-            len_tree = (len_tree << 8) + ord(archivo_comprimido.read(1))
+        len_tree = struct.unpack('>I', archivo_comprimido.read(4))[0]
+        print("len_tree: " + str(len_tree))
 
         # Leemos el árbol serializado
-        serialized_tree = archivo_comprimido.read(len_tree)
+        serialized_tree_binary = archivo_comprimido.read(len_tree)
+        serialized_tree_str = string_to_binary(serialized_tree_binary)
+        print("serialized_tree: " + serialized_tree_binary)
+        print("binary version:" + serialized_tree_str)
 
         # Reconstruimos el árbol de Huffman
-        arbol_huffman = self.reconstruir_arbol(serialized_tree)
+        arbol_huffman = self.deserialize_huffman_tree(serialized_tree_str)
+        CompresorHuffman.imprimir_arbol(CompresorHuffman(''), arbol_huffman)
 
         # Inicializamos el nodo actual como la raíz del árbol
         nodo_actual = arbol_huffman
 
+        # Leemos el resto del archivo comprimido
+        bits = archivo_comprimido.read()
+
         # Abrimos el archivo de salida para escribir los datos descomprimidos
         nombre_archivo, _ = os.path.splitext(self.ruta_archivo_comprimido)
         archivo_descomprimido = open(nombre_archivo, 'wb')
-
-        # Leemos el resto del archivo comprimido
-        bits = archivo_comprimido.read()
 
         # Recorremos los bits y descomprimimos
         for bit in bits:
@@ -301,6 +328,9 @@ class DescompresorHuffman:
 def descomprimir_archivo_huffman(ruta_archivo_comprimido):
     descompresor = DescompresorHuffman(ruta_archivo_comprimido)
     descompresor.descomprimir_archivo()
+
+def string_to_binary(s):
+    return ''.join(''.join(str((ord(c) >> i) & 1) for i in range(7, -1, -1)) for c in s)
 
 # Recibe dos argumentos:
 # - Flag que indica si se va a comprimir o descomprimir: -c para comprimir, -d para descomprimir
