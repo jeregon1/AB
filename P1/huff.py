@@ -307,7 +307,8 @@ class DescompresorHuffman:
 
         # Abrimos el archivo de salida para escribir los datos descomprimidos
         nombre_archivo, _ = os.path.splitext(self.ruta_archivo_comprimido)
-        archivo_descomprimido = open(nombre_archivo + "TEST", 'wb')
+        nombre_archivo = "d/" + nombre_archivo
+        archivo_descomprimido = open(nombre_archivo, 'wb')
 
         # Recorremos los bits y descomprimimos
         for bit in bits:
