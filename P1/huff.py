@@ -7,6 +7,20 @@ def int_to_4bytes(int_value):
 
 def bytes4_to_int(bytes):
     return struct.unpack('>I', bytes)[0]
+
+# byte_to_str(ord(a)) = "01100001"
+# It converts a byte to its str form with all 8 bits, including starting zeros
+def byte_to_str(byte):
+    binary_str = ''.join(str((byte >> i) & 1) for i in range(7, -1, -1))  # Convert byte to binary string
+    padded_str = binary_str.zfill(8)  # Pad the binary string with leading zeros
+    return padded_str
+    
+def str_to_char(s):
+    """Convert a binary string to a char."""
+    return chr(int(s, 2))
+
+def string_to_binary(s):
+    return ''.join(''.join(str((ord(c) >> i) & 1) for i in range(7, -1, -1)) for c in s)
     
 
 """
@@ -84,27 +98,29 @@ class CompresorHuffman:
         - Recorre el árbol recursivamente y asigna '0' para el hijo izquierdo y '1' para el hijo derecho, 
           acumulando los códigos para cada byte.
     '''
-    def generar_codigos(self, raiz, codigo=''):
+    @staticmethod
+    def generar_codigos(raiz, codigo=''):
         if raiz is None:
             return {}
 
         if raiz.byte is not None:
-            return {raiz.byte: codigo}
+            return {raiz.byte: codigo or '0'}
 
         codigos = {}
-        codigos.update(self.generar_codigos(raiz.izquierda, codigo + '0'))
-        codigos.update(self.generar_codigos(raiz.derecha, codigo + '1'))
+        codigos.update(CompresorHuffman.generar_codigos(raiz.izquierda, codigo + '0'))
+        codigos.update(CompresorHuffman.generar_codigos(raiz.derecha,   codigo + '1'))
 
         return codigos
 
-# 01a001c1b001f1e1d
-    def serialize_huffman_tree(self, node):
-        if node is None:
+    # 01a001c1b001f1e1d
+    @staticmethod
+    def serialize_huffman_tree(raiz):
+        if raiz is None:
             return ''
-        elif node.byte is not None: # Leaf node
-            return '1' + byte_to_str(ord(node.byte))
+        elif raiz.byte is not None: # Leaf node
+            return '1' + byte_to_str(ord(raiz.byte))
         else: # Internal node
-            return '0' + self.serialize_huffman_tree(node.izquierda) + self.serialize_huffman_tree(node.derecha)
+            return '0' + CompresorHuffman.serialize_huffman_tree(raiz.izquierda) + CompresorHuffman.serialize_huffman_tree(raiz.derecha)
 
     # Function that converts the binary serialized tree into its bits represenntation
     # It receives a string containing only ones and zeros and then it returns the
@@ -175,9 +191,10 @@ class CompresorHuffman:
         archivo.close()
         archivo_comprimido.close()
 
-def info_arbol_huffman(arbol_huffman):
-    profundidad = [0]
-    total_leafs_per_depth = []
+def info_arbol_huffman(arbol_huffman, show_tree=False):
+    if show_tree: print("Arbol"); CompresorHuffman.imprimir_arbol(arbol_huffman)
+    profundidad = [0] # Asume que el árbol tiene al menos un nodo
+    total_leafs_per_depth = [0]
 
     def helper(node, depth):
         if node is None:
@@ -190,7 +207,7 @@ def info_arbol_huffman(arbol_huffman):
         helper(node.izquierda, depth + 1)
         helper(node.derecha, depth + 1)
 
-    helper(arbol_huffman, 0)
+    if arbol_huffman is not None: helper(arbol_huffman, 0)
 
     hojas = sum(total_leafs_per_depth)
     percentages_per_depth = [total_leafs_per_depth[i] / float(hojas) * 100 for i in range(len(total_leafs_per_depth))]
@@ -200,7 +217,6 @@ def info_arbol_huffman(arbol_huffman):
 
     print("Profundidad máxima: " + str(profundidad[0]))
 
-    # print("Arbol"); CompresorHuffman.imprimir_arbol(arbol_huffman)
 
 # Crea una instancia del CompresorHuffman, cuenta las frecuencias, construye el árbol, genera los códigos y comprime el archivo.
 def comprimir_archivo_huffman(ruta_archivo, ruta_archivo_comprimido):
@@ -209,18 +225,7 @@ def comprimir_archivo_huffman(ruta_archivo, ruta_archivo_comprimido):
     tabla_codigos = compresor.generar_codigos(arbol_huffman)
     compresor.comprimir_archivo(ruta_archivo_comprimido, tabla_codigos, arbol_huffman)
 
-    info_arbol_huffman(arbol_huffman)
-
-# byte_to_str(ord(a)) = "01100001"
-# It converts a byte to its str form with all 8 bits, including starting zeros
-def byte_to_str(byte):
-    binary_str = ''.join(str((byte >> i) & 1) for i in range(7, -1, -1))  # Convert byte to binary string
-    padded_str = binary_str.zfill(8)  # Pad the binary string with leading zeros
-    return padded_str
-    
-def str_to_char(s):
-    """Convert a binary string to a char."""
-    return chr(int(s, 2))
+    info_arbol_huffman(arbol_huffman, show_tree=True)
 
 
 class DescompresorHuffman:
@@ -253,7 +258,6 @@ class DescompresorHuffman:
     def descomprimir_archivo(self):
         archivo_comprimido = open(self.ruta_archivo_comprimido, 'rb')
         # Leemos la longitud del árbol serializado
-        # len_tree = struct.unpack('>I', archivo_comprimido.read(4))[0]
         len_tree = bytes4_to_int(archivo_comprimido.read(4))
         print("len_tree: " + str(len_tree) + " bytes")
 
@@ -265,40 +269,44 @@ class DescompresorHuffman:
 
         # Reconstruimos el árbol de Huffman
         arbol_huffman = self.deserialize_huffman_tree(serialized_tree_str)
-        # CompresorHuffman.imprimir_arbol(CompresorHuffman(''), arbol_huffman)
+        # CompresorHuffman.imprimir_arbol(arbol_huffman)
 
-        # Inicializamos el nodo actual como la raíz del árbol
-        nodo_actual = arbol_huffman
-
+        tabla_char_codigo = CompresorHuffman.generar_codigos(arbol_huffman)
+        tabla_codigo_char = {}
+        # Invertimos la tabla de códigos para poder buscar los códigos en O(1)
+        for k, v in tabla_char_codigo.items():
+            tabla_codigo_char[v] = k
+        # print("tabla_codigo_char: " + str(tabla_codigo_char))
+        
         # Leemos el resto del archivo comprimido
         bytes = archivo_comprimido.read()
         bits = string_to_binary(bytes)
+        archivo_comprimido.close()
 
         # Abrimos el archivo de salida para escribir los datos descomprimidos
         nombre_archivo, _ = os.path.splitext(self.ruta_archivo_comprimido)
-        nombre_archivo = "d/" + nombre_archivo
-        archivo_descomprimido = open(nombre_archivo, 'wb')
+        archivo_descomprimido = open("d/" + nombre_archivo, 'wb')
 
-        # Recorremos los bits y descomprimimos
+        # Descomprimimos los datos usando la tabla de códigos, cuyas claves son los códigos y los valores son los bytes
+        # Y escribimos en batches, para no saturar la memoria
+        batch_size = 4000
+        content = ''
+        codigo = ''
         for bit in bits:
-            if bit == '0':
-                nodo_actual = nodo_actual.izquierda
-            else:
-                nodo_actual = nodo_actual.derecha
-
-            if nodo_actual.byte is not None:
-                archivo_descomprimido.write(nodo_actual.byte)
-                nodo_actual = arbol_huffman
-
-        archivo_comprimido.close()
+            codigo += bit
+            if codigo in tabla_codigo_char:
+                content += tabla_codigo_char[codigo]
+                if len(content) >= batch_size:
+                    archivo_descomprimido.write(content)
+                    content = ''
+                codigo = ''
+        archivo_descomprimido.write(content)
         archivo_descomprimido.close()
+
 
 def descomprimir_archivo_huffman(ruta_archivo_comprimido):
     descompresor = DescompresorHuffman(ruta_archivo_comprimido)
     descompresor.descomprimir_archivo()
-
-def string_to_binary(s):
-    return ''.join(''.join(str((ord(c) >> i) & 1) for i in range(7, -1, -1)) for c in s)
 
 
 # Recibe dos argumentos:
