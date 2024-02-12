@@ -175,38 +175,32 @@ class CompresorHuffman:
         archivo.close()
         archivo_comprimido.close()
 
-def info_arbol_huffman(arbol_huffman,):
+def info_arbol_huffman(arbol_huffman):
+    profundidad = [0]
+    total_leafs_per_depth = []
 
     def helper(node, depth):
         if node is None:
-            return 0, 0
-        if node.byte is not None:
-            return 1, depth
-        left = helper(node.izquierda, depth + 1)
-        right = helper(node.derecha, depth + 1)
-        return left[0] + right[0], max(left[1], right[1])
-    
-    nodos, profundidad = helper(arbol_huffman, 0)
-
-    # Se va a calcular el porcentaje de nodos hoja a cada profundidad
-    total_leafs_per_depth = [0] * (profundidad + 1)
-    def helper_depths_percentages(node, depth):
-        if node is None:
             return
+        if depth > profundidad[0]:
+            profundidad[0] = depth
+            total_leafs_per_depth.extend([0] * (depth - len(total_leafs_per_depth) + 1))
         if node.byte is not None:
             total_leafs_per_depth[depth] += 1
-        helper_depths_percentages(node.izquierda, depth + 1)
-        helper_depths_percentages(node.derecha, depth + 1)
-    helper_depths_percentages(arbol_huffman, 0)
+        helper(node.izquierda, depth + 1)
+        helper(node.derecha, depth + 1)
 
-    percentages_per_depth = [total_leafs_per_depth[i] / nodos * 100 for i in range(profundidad + 1)]
+    helper(arbol_huffman, 0)
 
-    for i in range(profundidad + 1):
-        print("Profundidad " + str(i) + ": " + str(percentages_per_depth[i]) + "%")
+    hojas = sum(total_leafs_per_depth)
+    percentages_per_depth = [total_leafs_per_depth[i] / float(hojas) * 100 for i in range(len(total_leafs_per_depth))]
 
-    print("Profundidad máxima: " + str(profundidad))
+    for i in range(len(percentages_per_depth)):
+        print ("Profundidad %d: %.2f%%" % (i, percentages_per_depth[i]))
 
-    print("Arbol"); CompresorHuffman.imprimir_arbol(arbol_huffman)
+    print("Profundidad máxima: " + str(profundidad[0]))
+
+    # print("Arbol"); CompresorHuffman.imprimir_arbol(arbol_huffman)
 
 # Crea una instancia del CompresorHuffman, cuenta las frecuencias, construye el árbol, genera los códigos y comprime el archivo.
 def comprimir_archivo_huffman(ruta_archivo, ruta_archivo_comprimido):
@@ -261,7 +255,7 @@ class DescompresorHuffman:
         # Leemos la longitud del árbol serializado
         # len_tree = struct.unpack('>I', archivo_comprimido.read(4))[0]
         len_tree = bytes4_to_int(archivo_comprimido.read(4))
-        print("len_tree: " + str(len_tree))
+        print("len_tree: " + str(len_tree) + " bytes")
 
         # Leemos el árbol serializado
         serialized_tree_binary = archivo_comprimido.read(len_tree)
