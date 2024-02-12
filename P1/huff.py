@@ -126,48 +126,6 @@ class CompresorHuffman:
 # cabecera ejemplo: 01011000 01001011 00011101 10001000 10110011 01011001 01101100 100
 # XK��Yl�
 
-    """
-
-        def decompress_tree(self, file):
-            # Read the length of the compressed tree from the file
-            tree_length = ord(file.read(4))
-
-            # Read that many bytes to get the compressed tree
-            compressed_tree = file.read(tree_length)
-
-            # Convert the compressed tree to a binary string
-            binary_tree = ''.join(format(ord(byte), '08b') for byte in compressed_tree)
-
-            # Deserialize the Huffman tree
-            tree, _ = self.deserialize_huffman_tree(binary_tree)
-
-            return tree
-
-        def deserialize_huffman_tree(self, serialized_tree):
-            # If the serialized tree is empty, return None
-            if not serialized_tree:
-                return None, ''
-
-            # Get the first character of the serialized tree
-            first_char = serialized_tree[0]
-
-            # If the first character is '1', this is a leaf node
-            if first_char == '1':
-                # The next 8 characters are the binary representation of the byte
-                byte = chr(int(serialized_tree[1:9], 2))
-                # Return the leaf node and the remaining serialized tree
-                return Node(byte=byte), serialized_tree[9:]
-
-            # If the first character is '0', this is not a leaf node
-            else:
-                # Deserialize the left subtree
-                left, serialized_tree = self.deserialize_huffman_tree(serialized_tree[1:])
-                # Deserialize the right subtree
-                right, serialized_tree = self.deserialize_huffman_tree(serialized_tree)
-                # Return the node and the remaining serialized tree
-                return Node(left=left, right=right), serialized_tree
-
-    """
 
     # A partir de la tabla de códigos, genera la cabecera que se añadirá al archivo comprimido
     def generar_cabecera(self, root):
@@ -235,26 +193,6 @@ def str_to_char(s):
     return chr(int(s, 2))
 
 
-"""     
-def reconstruir_arbol(self, serialized_tree):
-        # index es una lista para que pueda sea global dentro de reconstruir_arbol.
-        # Por ello solo se utiliza la primera componente, como si fuera un tipo int
-        index = [0]
-
-        def reconstruir_helper():
-            bit = serialized_tree[index[0]]
-            index[0] += 1
-            if bit == 1:
-                byte = serialized_tree[index[0]: index[0] + 8]
-                index[0] += 8
-                return NodoHuffman(chr(int(byte, 2)))
-            else:
-                left = reconstruir_helper()
-                right = reconstruir_helper()
-                return NodoHuffman(frecuencia=left.frecuencia + right.frecuencia, izquierda=left, derecha=right)
-
-        return reconstruir_helper() 
-"""
 class DescompresorHuffman:
     def __init__(self, ruta_archivo_comprimido):
         self.ruta_archivo_comprimido = ruta_archivo_comprimido
@@ -331,10 +269,6 @@ def descomprimir_archivo_huffman(ruta_archivo_comprimido):
 def string_to_binary(s):
     return ''.join(''.join(str((ord(c) >> i) & 1) for i in range(7, -1, -1)) for c in s)
 
-def access_bit(data, num):
-    base = int(num // 8)
-    shift = int(num % 8)
-    return (data[base] & (1 << shift)) >> shift
 
 # Recibe dos argumentos:
 # - Flag que indica si se va a comprimir o descomprimir: -c para comprimir, -d para descomprimir
@@ -351,5 +285,3 @@ if __name__ == "__main__":
     elif sys.argv[1] == '-d':
         ruta_archivo_comprimido = sys.argv[2]
         descomprimir_archivo_huffman(ruta_archivo_comprimido)
-    elif sys.argv[1] == '-j':
-        print(byte_to_str(ord('a')))
