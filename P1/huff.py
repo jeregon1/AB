@@ -1,4 +1,6 @@
+#!/usr/bin/env python2
 # coding=utf-8
+
 from heapq import heapify, heappop, heappush
 import os, sys, struct
 
@@ -9,10 +11,10 @@ def bytes4_to_int(bytes):
     return struct.unpack('>I', bytes)[0]
 
 # byte_to_str(ord(a)) = "01100001"
-# It converts a byte to its str form with all 8 bits, including starting zeros
+# Convierte un byte a su forma de cadena con todos los 8 bits, incluyendo los ceros iniciales
 def byte_to_str(byte):
-    binary_str = ''.join(str((byte >> i) & 1) for i in range(7, -1, -1))  # Convert byte to binary string
-    padded_str = binary_str.zfill(8)  # Pad the binary string with leading zeros
+    binary_str = ''.join(str((byte >> i) & 1) for i in range(7, -1, -1))  # Convierte byte a cadena binaria
+    padded_str = binary_str.zfill(8)  # Rellena con ceros a la izquierda
     return padded_str
     
 def str_to_char(s):
@@ -122,16 +124,16 @@ class CompresorHuffman:
         else: # Internal node
             return '0' + CompresorHuffman.serialize_huffman_tree(raiz.izquierda) + CompresorHuffman.serialize_huffman_tree(raiz.derecha)
 
-    # Function that converts the binary serialized tree into its bits represenntation
-    # It receives a string containing only ones and zeros and then it returns the
+    # Función que convierte el árbol serializado en su representación binaria
+    # Recibe una cadena que contiene solo unos y ceros y luego devuelve la representación en bytes
     def binary_tree_to_bytes (self, node):
         binary = self.serialize_huffman_tree(node)
         bytes = ''
         while binary is not '':
             bits_8 = binary[:8]
-            # Needed for the last bits case
+            # Necesario para el caso de los últimos bits
             if len(bits_8) is not 8: bits_8 = bits_8 + (8 - len(bits_8)) * '0'
-            # Here we convert "01100001" to its byte form
+            # Aquí convertimos "01100001" a su forma de byte
             byte = 0
             for char in bits_8:
                 if char == '1': bit = 1
@@ -142,9 +144,10 @@ class CompresorHuffman:
             bytes += chr(byte)
             binary = binary[8:]
         return bytes
-#                   01011000 01001011 00011101 10001000 10110011 01011001 01101100 10000000
-# cabecera ejemplo: 01011000 01001011 00011101 10001000 10110011 01011001 01101100 100
-# XK��Yl�
+
+    #                   01011000 01001011 00011101 10001000 10110011 01011001 01101100 10000000
+    # cabecera ejemplo: 01011000 01001011 00011101 10001000 10110011 01011001 01101100 100
+    # XK��Yl�
 
 
     # A partir de la tabla de códigos, genera la cabecera que se añadirá al archivo comprimido
