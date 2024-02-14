@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python2.4
 # coding=utf-8
 
 from heapq import heapify, heappop, heappush
@@ -288,7 +288,7 @@ class DescompresorHuffman:
 
         # Abrimos el archivo de salida para escribir los datos descomprimidos
         nombre_archivo, _ = os.path.splitext(self.ruta_archivo_comprimido)
-        archivo_descomprimido = open("d/" + nombre_archivo, 'wb')
+        archivo_descomprimido = open(nombre_archivo, 'wb')
 
         # Descomprimimos los datos usando la tabla de códigos, cuyas claves son los códigos y los valores son los bytes
         # Y escribimos en batches, para no saturar la memoria
