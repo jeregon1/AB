@@ -5,17 +5,22 @@
 comprimir="-c"
 descomprimir="-d"
 
-# Creo la carpeta d (descomprimidos) si no existe
+# Creo la carpeta d (descomprimir) si no existe
 if [ ! -d d ]; then
     mkdir d
 fi
 
 probar_archivo() {
     archivo=$1
+
     ./huff.py $comprimir $archivo
-    # Muevo el archivo comprimido a la carpeta d (descomprimidos)
-    mv $archivo1.huf d/$archivo.huf 
-    ./huff.py d/$descomprimir $archivo.huf
+    # Muevo el archivo comprimido a la carpeta d (descomprimir)
+    mv $archivo.huf d/$archivo.huf 
+    ./huff.py $descomprimir d/$archivo.huf
+
+    if cmp $archivo d/$archivo; then
+        echo -e "\nArchivo $archivo OK"
+    fi
 }
 
 # Si hay un argumento, se prueba con ese archivo
