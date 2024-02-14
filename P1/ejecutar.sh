@@ -1,18 +1,34 @@
 #!/bin/bash
 
-# Solo puede haber 2 argumentos
-# 1. flag -c o -d para comprimir o descomprimir
-# 2. nombre del archivo a comprimir o descomprimir
+# Script que prueba el programa huff.py
 
-if [ $# -ne 2 ]; then
-    echo "Error: Uso $0 [-c|-d] <nombre_archivo>"
-    exit 1
-elif [ $1 != "-c" ] && [ $1 != "-d" ]; then
-    echo "Error: Uso $0 [-c|-d] <nombre_archivo>"
-    exit 1
-elif [ ! -f $2 ]; then
-    echo "Error: El archivo $2 no existe"
-    exit 1
+comprimir="-c"
+descomprimir="-d"
+
+# Creo la carpeta d (descomprimidos) si no existe
+if [ ! -d d ]; then
+    mkdir d
 fi
 
-python2.4 huff.py $1 $2
+probar_archivo() {
+    archivo=$1
+    ./huff.py $comprimir $archivo
+    # Muevo el archivo comprimido a la carpeta d (descomprimidos)
+    mv $archivo1.huf d/$archivo.huf 
+    ./huff.py d/$descomprimir $archivo.huf
+}
+
+# Si hay un argumento, se prueba con ese archivo
+if [ $# -eq 1 ]; then
+    probar_archivo $1
+    exit 0
+fi
+
+archivo1="x.txt"
+archivo2="uno.txt"
+archivo3="practica1_23-24.pdf"
+
+# Pruebo el programa con los archivos de prueba
+probar_archivo $archivo1
+probar_archivo $archivo2
+probar_archivo $archivo3
