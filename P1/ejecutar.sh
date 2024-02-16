@@ -29,9 +29,23 @@ probar_archivo() {
     fi
 }
 
+calcular_compresion() {
+    archivo=$1
+
+    echo -e "\nCompresión del archivo $archivo"
+    echo -e "Original: $(wc -c $archivo | awk '{print $1}') bytes"
+    echo -e "Comprimido: $(wc -c d/$archivo.huf | awk '{print $1}') bytes"
+
+    original=$(wc -c $archivo | awk '{print $1}')
+    comprimido=$(wc -c d/$archivo.huf | awk '{print $1}')
+    porcentaje=$(echo "scale=2; 100 - ($comprimido * 100 / $original)" | bc)
+    echo -e "Porcentaje de compresión: $porcentaje%"
+}
+
 # Si hay un argumento, se prueba con ese archivo
 if [ $# -eq 1 ]; then
     probar_archivo $1
+    calcular_compresion $1
     exit 0
 fi
 
@@ -41,16 +55,11 @@ archivo3="quijote.txt"
 archivo4="practica1_23-24.pdf"
 
 # Pruebo el programa con los archivos de prueba
-probar_archivo $archivo1
-probar_archivo $archivo2
-probar_archivo $archivo3
-probar_archivo $archivo4
+# probar_archivo $archivo1
+# probar_archivo $archivo2
+# probar_archivo $archivo3
+# probar_archivo $archivo4
 
-# Ahora calculamos la compresión del archivo quijote.txt y practica1_23-24.pdf
-echo -e "\nCompresión del archivo quijote.txt"
-echo -e "Original: $(wc -c $archivo3 | awk '{print $1}') bytes"
-echo -e "Comprimido: $(wc -c d/$archivo3.huf | awk '{print $1}') bytes"
-
-echo -e "\nCompresión del archivo practica1_23-24.pdf"
-echo -e "Original: $(wc -c $archivo4 | awk '{print $1}') bytes"
-echo -e "Comprimido: $(wc -c d/$archivo4.huf | awk '{print $1}') bytes"
+calcular_compresion $archivo2
+calcular_compresion $archivo3
+calcular_compresion $archivo4

@@ -10,6 +10,12 @@ def int_to_4bytes(int_value):
 def bytes4_to_int(bytes):
     return struct.unpack('>I', bytes)[0]
 
+def int_to_1byte(int_value):
+    return struct.pack('>B', int_value)
+
+def bytes1_to_int(bytes):
+    return struct.unpack('>B', bytes)[0]
+
 # byte_to_str(ord(a)) = "01100001"
 # Convierte un byte a su forma de cadena con todos los 8 bits, incluyendo los ceros iniciales
 def byte_to_str(byte):
@@ -173,6 +179,7 @@ class CompresorHuffman:
         archivo_comprimido.write(self.generar_cabecera(arbol_huffman))
 
         bits_acumulados = ''
+        content = ''
 
         # Recorrer el fichero original y escribir los bits comprimidos en el fichero comprimido
         for linea in archivo:
@@ -182,14 +189,19 @@ class CompresorHuffman:
                 while len(bits_acumulados) >= 8:
                     byte_to_write = bits_acumulados[:8]   # Tomar los primeros 8 bits
                     bits_acumulados = bits_acumulados[8:] # Eliminar los 8 bits que ya se han escrito
-                    archivo_comprimido.write(chr(int(byte_to_write, 2)))
+                    content += str_to_char(byte_to_write)
 
+
+        padding = 0
         # En caso de que queden bits por escribir, se añade un byte adicional para completar el último byte
         if bits_acumulados:
             padding = 8 - len(bits_acumulados)
             bits_acumulados += '0' * padding
-            archivo_comprimido.write(chr(int(bits_acumulados, 2)))
-            archivo_comprimido.write(chr(padding))
+            content += str_to_char(bits_acumulados)
+
+        # Escribir en 1 byte la cantidad de bits de relleno del último byte
+        archivo_comprimido.write(int_to_1byte(padding))
+        archivo_comprimido.write(content)
 
         archivo.close()
         archivo_comprimido.close()
@@ -260,31 +272,35 @@ class DescompresorHuffman:
     # Función para descomprimir el archivo comprimido usando el árbol de Huffman reconstruido
     def descomprimir_archivo(self):
         archivo_comprimido = open(self.ruta_archivo_comprimido, 'rb')
+
         # Leemos la longitud del árbol serializado
         len_tree = bytes4_to_int(archivo_comprimido.read(4))
-        print("len_tree: " + str(len_tree) + " bytes")
 
         # Leemos el árbol serializado
         serialized_tree_binary = archivo_comprimido.read(len_tree)
-        # print("serialized_tree: " + serialized_tree_binary)
+        # Convertimos el árbol serializado a su representación en cadena
         serialized_tree_str = string_to_binary(serialized_tree_binary)
-        # print("binary version:" + serialized_tree_str)
 
         # Reconstruimos el árbol de Huffman
         arbol_huffman = self.deserialize_huffman_tree(serialized_tree_str)
-        # CompresorHuffman.imprimir_arbol(arbol_huffman)
 
         tabla_char_codigo = CompresorHuffman.generar_codigos(arbol_huffman)
         tabla_codigo_char = {}
         # Invertimos la tabla de códigos para poder buscar los códigos en O(1)
         for k, v in tabla_char_codigo.items():
             tabla_codigo_char[v] = k
-        # print("tabla_codigo_char: " + str(tabla_codigo_char))
         
+        #Leemos la longitud del contenido
+        len_padding = bytes1_to_int(archivo_comprimido.read(1))
+
         # Leemos el resto del archivo comprimido
         bytes = archivo_comprimido.read()
         bits = string_to_binary(bytes)
         archivo_comprimido.close()
+        
+        # Eliminamos los bits de relleno del último byte
+        if len_padding > 0:
+            bits = bits[ : -len_padding]
 
         # Abrimos el archivo de salida para escribir los datos descomprimidos
         nombre_archivo, _ = os.path.splitext(self.ruta_archivo_comprimido)
@@ -292,7 +308,7 @@ class DescompresorHuffman:
 
         # Descomprimimos los datos usando la tabla de códigos, cuyas claves son los códigos y los valores son los bytes
         # Y escribimos en batches, para no saturar la memoria
-        batch_size = 4000
+        batch_size = 8000
         content = ''
         codigo = ''
         for bit in bits:
@@ -327,3 +343,6 @@ if __name__ == "__main__":
     elif sys.argv[1] == '-d':
         ruta_archivo_comprimido = sys.argv[2]
         descomprimir_archivo_huffman(ruta_archivo_comprimido)
+    else:
+        print("Uso: python huff.py [-c|-d] ruta_archivo")
+        sys.exit()
