@@ -228,7 +228,7 @@ def comprimir_archivo_huffman(ruta_archivo, ruta_archivo_comprimido):
     tabla_codigos = compresor.generar_codigos(arbol_huffman)
     compresor.comprimir_archivo(ruta_archivo_comprimido, tabla_codigos, arbol_huffman)
 
-    info_arbol_huffman(arbol_huffman, show_tree=True)
+    info_arbol_huffman(arbol_huffman, show_tree=False)
 
 
 class DescompresorHuffman:
