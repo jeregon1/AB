@@ -19,7 +19,7 @@ fi
 probar_archivo() {
     archivo=$1
 
-    echo -n Comprimir archivo de $(wc -c $archivo | awk '{print $1}') bytes
+    printf "Comprimir archivo de %'d bytes" $(wc -c $archivo | awk '{print $1}')
     time ./huff.py $comprimir $archivo
     # Muevo el archivo comprimido a la carpeta d (descomprimir)
     mv $archivo.huf d/$archivo.huf
