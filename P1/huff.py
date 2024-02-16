@@ -235,6 +235,11 @@ def info_arbol_huffman(arbol_huffman, show_tree=False):
 
 # Crea una instancia del CompresorHuffman, cuenta las frecuencias, construye el árbol, genera los códigos y comprime el archivo.
 def comprimir_archivo_huffman(ruta_archivo, ruta_archivo_comprimido):
+    # Si el archivo está vacío, crear uno vacío con la extensión .huf
+    if os.stat(ruta_archivo).st_size == 0:
+        open(ruta_archivo_comprimido, 'w').close()
+        return
+
     compresor = CompresorHuffman(ruta_archivo)
     arbol_huffman = compresor.construir_arbol()
     tabla_codigos = compresor.generar_codigos(arbol_huffman)
@@ -324,6 +329,11 @@ class DescompresorHuffman:
 
 
 def descomprimir_archivo_huffman(ruta_archivo_comprimido):
+    # Si el archivo comprimido está vacío, crear uno vacío con la extensión original
+    if os.stat(ruta_archivo_comprimido).st_size == 0:
+        nombre_archivo, _ = os.path.splitext(ruta_archivo_comprimido)
+        open(nombre_archivo, 'w').close()
+        return
     descompresor = DescompresorHuffman(ruta_archivo_comprimido)
     descompresor.descomprimir_archivo()
 
