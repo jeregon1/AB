@@ -21,7 +21,7 @@ probar_archivo() {
 
     ./huff.py $comprimir $archivo
     # Muevo el archivo comprimido a la carpeta d (descomprimir)
-    mv $archivo.huf d/$archivo.huf 
+    mv $archivo.huf d/$archivo.huf
     ./huff.py $descomprimir d/$archivo.huf
 
     if cmp $archivo d/$archivo; then
@@ -45,3 +45,12 @@ probar_archivo $archivo1
 probar_archivo $archivo2
 probar_archivo $archivo3
 probar_archivo $archivo4
+
+# Ahora calculamos la compresión del archivo quijote.txt y practica1_23-24.pdf
+echo -e "\nCompresión del archivo quijote.txt"
+echo -e "Original: $(wc -c $archivo3 | awk '{print $1}') bytes"
+echo -e "Comprimido: $(wc -c d/$archivo3.huf | awk '{print $1}') bytes"
+
+echo -e "\nCompresión del archivo practica1_23-24.pdf"
+echo -e "Original: $(wc -c $archivo4 | awk '{print $1}') bytes"
+echo -e "Comprimido: $(wc -c d/$archivo4.huf | awk '{print $1}') bytes"
