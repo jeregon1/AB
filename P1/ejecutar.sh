@@ -25,7 +25,7 @@ probar_archivo() {
     ./huff.py $descomprimir d/$archivo.huf
 
     if cmp $archivo d/$archivo; then
-        echo -e "\nArchivo $archivo OK"
+        echo -e "\nArchivo $archivo es igual al descomprimido. OK"
     fi
 }
 
@@ -33,7 +33,7 @@ calcular_compresion() {
     archivo=$1
 
     echo -e "\nCompresión del archivo $archivo"
-    echo -e "Original: $(wc -c $archivo | awk '{print $1}') bytes"
+    echo -e "Original:   $(wc -c $archivo | awk '{print $1}') bytes"
     echo -e "Comprimido: $(wc -c d/$archivo.huf | awk '{print $1}') bytes"
 
     original=$(wc -c $archivo | awk '{print $1}')
@@ -49,17 +49,18 @@ if [ $# -eq 1 ]; then
     exit 0
 fi
 
-archivo1="x.txt"
+archivo1="vacio.txt"
 archivo2="uno.txt"
 archivo3="quijote.txt"
 archivo4="practica1_23-24.pdf"
 
 # Pruebo el programa con los archivos de prueba
-# probar_archivo $archivo1
-# probar_archivo $archivo2
-# probar_archivo $archivo3
-# probar_archivo $archivo4
+probar_archivo $archivo1
+probar_archivo $archivo2
+probar_archivo $archivo3
+probar_archivo $archivo4
 
+calcular_compresion $archivo1
 calcular_compresion $archivo2
 calcular_compresion $archivo3
 calcular_compresion $archivo4
