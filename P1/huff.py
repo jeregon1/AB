@@ -240,7 +240,7 @@ def comprimir_archivo_huffman(ruta_archivo, ruta_archivo_comprimido):
     tabla_codigos = compresor.generar_codigos(arbol_huffman)
     compresor.comprimir_archivo(ruta_archivo_comprimido, tabla_codigos, arbol_huffman)
 
-    info_arbol_huffman(arbol_huffman, show_tree=False)
+    info_arbol_huffman(arbol_huffman, show_tree=True)
 
 
 class DescompresorHuffman:
@@ -290,7 +290,7 @@ class DescompresorHuffman:
         for k, v in tabla_char_codigo.items():
             tabla_codigo_char[v] = k
         
-        #Leemos la longitud del contenido
+        # Leemos la longitud del relleno del último byte
         len_padding = bytes1_to_int(archivo_comprimido.read(1))
 
         # Leemos el resto del archivo comprimido
