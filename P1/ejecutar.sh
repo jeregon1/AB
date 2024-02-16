@@ -19,10 +19,12 @@ fi
 probar_archivo() {
     archivo=$1
 
-    ./huff.py $comprimir $archivo
+    echo -n Comprimir archivo de $(wc -c $archivo | awk '{print $1}') bytes
+    time ./huff.py $comprimir $archivo
     # Muevo el archivo comprimido a la carpeta d (descomprimir)
     mv $archivo.huf d/$archivo.huf
-    ./huff.py $descomprimir d/$archivo.huf
+    echo -n Descomprimir
+    time ./huff.py $descomprimir d/$archivo.huf
 
     if cmp $archivo d/$archivo; then
         echo -e "\nArchivo $archivo es igual al descomprimido. OK"
@@ -32,14 +34,14 @@ probar_archivo() {
 calcular_compresion() {
     archivo=$1
 
-    echo -e "\nCompresión del archivo $archivo"
-    echo -e "Original:   $(wc -c $archivo | awk '{print $1}') bytes"
-    echo -e "Comprimido: $(wc -c d/$archivo.huf | awk '{print $1}') bytes"
-
     original=$(wc -c $archivo | awk '{print $1}')
     comprimido=$(wc -c d/$archivo.huf | awk '{print $1}')
-    porcentaje=$(echo "scale=2; 100 - ($comprimido * 100 / $original)" | bc)
-    echo -e "Porcentaje de compresión: $porcentaje%"
+    porcentaje=$(echo "scale=2; ($comprimido * 100 / $original)" | bc)
+
+    echo -e "\nCompresión del archivo $archivo"
+    printf "Original:   %'d bytes\n" $original
+    printf "Comprimido: %'d bytes\n" $comprimido
+    echo -e "El archivo comprimido ocupa un $porcentaje% del original\n"
 }
 
 # Si hay un argumento, se prueba con ese archivo
