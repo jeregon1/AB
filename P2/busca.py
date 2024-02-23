@@ -161,34 +161,31 @@ def busca(block):
 
     Comentarios: La lista de artículos de la solución se pasa por referencia al ser un array, así que no es necesario devolverla
     """
-
-    # The base solution is the largest article, as we assume all articles fit in the page and there's at least one article
     block.articles = sort_articles(block.articles) 
     solution = Solution(0, [])
-    busca_backtracking(block, 0, solution)
+    """
+    Recursive function that looks for the best combination of articles to maximize the area covered by them
+    Parameters:
+        - block: block of articles
+        - i: index of the article to check (number of articles checked so far)
+    """
+    def busca_backtracking(i):
+        if i == block.n_articles: # Base case: all articles have been checked
+            return 
+        
+        for article in block.articles[i:]:
+            if not check_overlap(article, solution.articles):
+
+                new_area = calculate_area(solution.articles + [article])
+                if new_area > solution.area:
+                    solution.area = new_area
+                    solution.articles.append(article)
+
+                busca_backtracking(i + 1)
+
+    busca_backtracking(0)
     return solution
     
-"""
-Recursive function that looks for the best combination of articles to maximize the area covered by them
-Parameters:
-    - block: block of articles
-    - i: index of the article to check (number of articles checked so far)
-    - max_area: maximum area found so far
-    - articles: list of articles that maximize the area
-"""
-def busca_backtracking(block, i, solution):
-    if i == block.n_articles: # Base case: all articles have been checked
-        return 
-    
-    for article in block.articles[i:]:
-        if not check_overlap(article, solution.articles):
-
-            new_area = calculate_area(solution.articles + [article])
-            if new_area > solution.area:
-                solution.area = new_area
-                solution.articles.append(article)
-
-            busca_backtracking(block, i + 1, solution)
 
 
 """  
