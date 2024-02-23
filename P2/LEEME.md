@@ -21,7 +21,6 @@ El script ejecutar.sh comprueba el correcto funcionamiento del programa busca.py
 - 🎃
 
 ```shell
-🎃🎃
 ./ejecutar.sh [fichero_entrada] [fichero_resultados]
-# Si no se especifica fichero_entrada, se ejecutará con todos los ficheros de prueba, generando para cada uno de ellos un fichero de resultados
+# Si no se especifica fichero_entrada, se ejecutará con todos los ficheros de prueba, generando para cada uno de ellos un fichero de resultados. "fichero_resultados" solo es necesario cuando se introduce manualmente un fichero de entrada.
 ```

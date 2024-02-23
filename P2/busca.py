@@ -75,7 +75,7 @@ class Article:
         self.y = y
 
     def __str__(self):
-        return "w: {}, h: {}, x: {}, y: {}".format(self.w, self.h, self.x, self.y)
+        return "Article with values--> w: {}, h: {}, x: {}, y: {}\n".format(self.w, self.h, self.x, self.y)
 
 """ 
 Class that represents a block of articles
@@ -223,7 +223,8 @@ if __name__ == "__main__":
         solution.time = (time_end - time_start) * 1000
 
         solutions.append(solution)
-        print("Area: {} mm², Time: {:.6f} ms".format(solution.area, solution.time))
+        articles_str = '-'.join(str(article) for article in solution.articles)
+        print("Area: {} mm², Time: {:.6f} ms\n List of articles: \n-{}\n".format(solution.area, solution.time, articles_str))
     
     # Write solutions to file
     with open(sys.argv[2], "w") as f:
