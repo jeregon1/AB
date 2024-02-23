@@ -2,17 +2,16 @@
 
 import time, sys
 
-""" 
-Algotirmo de búsqueda con retroceso que, dados:
-    - La dimensión de la página (anchura W y altura H) 
-    - Una lista de n artículos, cada uno con su dimensión y posición (es decir, anchura wi,
-       altura hi y coordenadas cartesianas (xi, yi) como especificado anteriormente)
+"""
+Search algorithm with backtracking that, given:
+    - The page dimensions (width W and height H)
+    - A list of n articles, each with its dimension and position (i.e., width wi,
+      height hi and cartesian coordinates (xi, yi) as specified above)
 
-determine los artículos a colocar en la página maximizando el área total ocupada por artículos y calcule la cantidad de espacio total ocupada por
-los mismos
+determines the articles to place on the page maximizing the total area occupied by articles and calculate the total space occupied by them
 """
 
-# Formato fichero de entrada:
+# Entry file format:
 """
 Organized by blocks starting with 3 numbers: n (number of articles), W (page width) and L (page height).
 The following n lines contain 4 numbers in this order:
@@ -34,7 +33,7 @@ Page example: (x,y)
 +-------------------+
 (0,H)               (W,H)
 
-Ejemplo:
+Example:
 5 280 400    👈🏼 Block 1
 10 10 0 0        👈🏼 Article 1
 10 10 15 15      👈🏼 Article 2
@@ -49,18 +48,19 @@ Ejemplo:
 80 70 60 50
 50 50 40 40
 
-Asumiciones:
- - Hay al menos un bloque
- - En cada bloque hay al menos un artículo
- - Las coordenadas y dimensiones de los artículos son enteros positivos 
- - Las coordenadas y dimensiones de los artículos son tales que el artículo está completamente dentro de la página
+
+Asumptions:
+    - There is at least one block
+    - There is at least one article in each block
+    - The coordinates and dimensions of the articles are positive integers
+    - The coordinates and dimensions of the articles are such that the article is completely within the page
 """
 
-# Formato fichero de salida:
+# Output file format:
 """
-Una línea por cada bloque que contiene 2 números: 
- - área total ocupada por los artículos (en mm)
- - tiempo necesitado (en milisegundos) para calcular la solución.
+A line for each block containing 2 numbers:
+    - total area occupied by the articles (in mm)
+    - time needed (in milliseconds) to calculate the solution.
 """
 
 
@@ -112,12 +112,18 @@ def read_file(file):
             i += 1 + n
     return blocks
 
+"""
+Calculates the area occupied by a list of articles
+"""
 def calculate_area(articles):
     area = 0
     for article in articles:
         area += article.w * article.h
     return area
 
+"""
+Checks if an article overlaps with any other article in a list
+"""
 def check_overlap(article, articles):
     for a in articles:
         article_is_left = article.x + article.w <= a.x
@@ -128,10 +134,16 @@ def check_overlap(article, articles):
             return True
     return False
 
+"""
+Sorts a list of articles by area (w * h) in descending order
+"""
 def sort_articles(articles):
     return sorted(articles, key=lambda a: a.w * a.h, reverse=True)
 
 
+"""
+Class that represents the solution of the search algorithm
+"""
 class Solution:
     def __init__(self, area, articles, time = .0):
         self.area = area # in mm²
@@ -147,22 +159,24 @@ Articles can't overlap and must be inside the page.
 Returns the maximum area found and the list of articles that maximize it
 """
 def busca(block):
-    """ 
-     1. Ordenar los artículos por área (w * h) de mayor a menor
-     2. Inicializar la solución al primer artículo, ya que asumimos que hay al menos un artículo
-     3. Para cada artículo que no está en la solución:
-        - Si el artículo no se solapa con ningún otro artículo de la solución, entonces:
-            - Calcular el nuevo área total ocupada por los artículos
-            - Si la nueva área total es mayor que la anterior, entonces:
-                - Actualizar el área total ocupada por los artículos mejor hasta el momento
-                - Actualizar la lista de artículos mejor hasta el momento
-            - Llamar recursivamente a la función con el siguiente artículo
-    4. Devolver el área total ocupada por los artículos mejor hasta el momento
-
-    Comentarios: La lista de artículos de la solución se pasa por referencia al ser un array, así que no es necesario devolverla
     """
+    1. Sort articles by area (w * h) in descending order
+    2. Initialize the solution to the first article, assuming there is at least one article
+    3. For each article that is not in the solution:
+        - If the article does not overlap with any other article in the solution, then:
+            - Calculate the new total area occupied by the articles
+            - If the new total area is greater than the previous one, then:
+                - Update the total area occupied by the articles best so far
+                - Update the list of articles best so far
+            - Call the function recursively with the next article
+    4. Return the total area occupied by the articles best so far
+
+    Comments: The list of articles of the solution is passed by reference as it is an array, so it is not necessary to return it
+    """
+
     block.articles = sort_articles(block.articles) 
     solution = Solution(0, [])
+
     """
     Recursive function that looks for the best combination of articles to maximize the area covered by them
     Parameters:
@@ -183,6 +197,7 @@ def busca(block):
 
                 busca_backtracking(i + 1)
 
+    # Start the recursive function in order to find the first combination of articles that maximize the area
     busca_backtracking(0)
     return solution
     
