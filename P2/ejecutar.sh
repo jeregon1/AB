@@ -6,7 +6,7 @@
 # Si no, se ejecutan las pruebas con los archivos de prueba
 
 if [ $# -eq 2 ]; then
-    python busca.py $1 $2
+    python3 busca.py $1 $2
     exit 0
 fi
 

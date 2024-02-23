@@ -1,4 +1,5 @@
 #!/mnt/c/Users/jesus/anaconda3/envs/alg/python.exe
+#!/opt/csw/bin/python3
 
 import time, sys
 
@@ -145,13 +146,17 @@ def sort_articles(articles):
 Class that represents the solution of the search algorithm
 """
 class Solution:
-    def __init__(self, area, articles, time = .0):
+    def __init__(self, area, articles, time = .0, nodes_generated = 0):
         self.area = area # in mm²
         self.articles = articles
         self.time = time # in ms
+        self.nodes_generated = nodes_generated
 
     def __str__(self):
-        return "{} {:.6f}".format(self.area, self.time)
+        articles_str = '-'.join(str(article) for article in self.articles)
+        return "Area: {} mm², Time: {:.6f} ms, Nodes generated: {}\n List of articles: \n-{}".format(
+            solution.area, solution.time, solution.nodes_generated, articles_str
+        )
     
 """
 Backtracking function that maximizes the area covered by articles in a block and calculates the total space occupied by them.
@@ -180,10 +185,10 @@ def busca(block):
     """
     Recursive function that looks for the best combination of articles to maximize the area covered by them
     Parameters:
-        - block: block of articles
         - i: index of the article to check (number of articles checked so far)
     """
     def busca_backtracking(i):
+        solution.nodes_generated += 1
         if i == block.n_articles: # Base case: all articles have been checked
             return 
         
@@ -223,10 +228,9 @@ if __name__ == "__main__":
         solution.time = (time_end - time_start) * 1000
 
         solutions.append(solution)
-        articles_str = '-'.join(str(article) for article in solution.articles)
-        print("Area: {} mm², Time: {:.6f} ms\n List of articles: \n-{}\n".format(solution.area, solution.time, articles_str))
+        print("{}".format(solution))
     
     # Write solutions to file
     with open(sys.argv[2], "w") as f:
         for solution in solutions:
-            f.write("{}\n".format(solution))
+            f.write("{} {:.6f}".format(solution.area, solution.time))
