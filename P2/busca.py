@@ -164,11 +164,8 @@ def busca(block):
 
     # The base solution is the largest article, as we assume all articles fit in the page and there's at least one article
     block.articles = sort_articles(block.articles) 
-    max_articles = [block.articles[0]]
-    max_area = calculate_area(max_articles)
-    solution = Solution(max_area, max_articles)
-
-    busca_backtracking(block, 1, solution)
+    solution = Solution(0, [])
+    busca_backtracking(block, 0, solution)
     return solution
     
 """
