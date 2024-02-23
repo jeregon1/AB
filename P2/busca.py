@@ -88,27 +88,28 @@ class Block:
         self.articles = articles
 
     def __str__(self):
-        return "n: {}, W: {}, H: {}, articles: {}".format(self.n_articles, self.W, self.H, self.articles)
+        articles_str = ""
+        for article in self.articles:
+            articles_str +=  str(article) + "\n"
+        return "n: {}, W: {}, H: {}, articles:\n{}".format(self.n_articles, self.W, self.H, articles_str)
 
 
 """
 Reads a file containing the blocks and articles and returns a list of blocks
 """
 def read_file(file):
-    blocks = [] # Block list
+    blocks = []
     with open(file, "r") as f:
         lines = f.readlines()
-        n, W, H = 0, 0, 0
-        articles = [] # Article list
-        for line in lines:
-            if len(line.split()) == 3:
-                if articles != []:
-                    blocks.append(Block(n, W, H, articles))
-                articles = []
-                n, W, H = [int(x) for x in line.split()]
-            else:
-                w, h, x, y = [int(x) for x in line.split()]
+        i = 0
+        while i < len(lines):
+            n, W, H = map(int, lines[i].split())
+            articles = []
+            for j in range(i + 1, i + 1 + n):
+                w, h, x, y = map(int, lines[j].split())
                 articles.append(Article(w, h, x, y))
+            blocks.append(Block(n, W, H, articles))
+            i += 1 + n
     return blocks
 
 def calculate_area(articles):
@@ -133,9 +134,9 @@ def sort_articles(articles):
 """
 Backtracking function that maximizes the area covered by articles in a block and calculates the total space occupied by them.
 Articles can't overlap and must be inside the page.
+Returns the list of articles that maximize the area and the area itself
 """
 def busca(block):
-    # Backtracking search looking to maximize area covered by articles in a block and calculate the total space occupied by them
     """ 
      1. Ordenar los artículos por área (w * h) de mayor a menor
      2. Inicializar el área total ocupada por los artículos a 0
@@ -157,34 +158,57 @@ def busca(block):
 """
 Recursive function that looks for the best combination of articles to maximize the area covered by them
 """
-def busca_backtracking(block, i, max_area, max_articles):
+def busca_backtracking(block, i, max_area, articles):
     if i == block.n_articles:
-        return max_area, max_articles
+        return max_area, articles
+    
     article = block.articles[i]
-    if not check_overlap(article, max_articles) and article.x + article.w <= block.W and article.y + article.h <= block.L:
+    if not check_overlap(article, articles) and article.x + article.w <= block.W and article.y + article.h <= block.H:
         max_area += article.w * article.h
-        max_articles.append(article)
-        max_area, max_articles = busca_backtracking(block, i + 1, max_area, max_articles)
+        articles.append(article)
+        max_area, articles = busca_backtracking(block, i + 1, max_area, articles)
         if max_area > max_area:
             max_area = max_area
-            max_articles = max_articles
+            articles = articles
         max_area -= article.w * article.h
-        max_articles.pop()
-    return max_area, max_articles
+        articles.pop()
+    return max_area, articles
 
+class Solution:
+    def __init__(self, area, articles, time):
+        self.area = area
+        self.articles = articles
+        self.time = time
 
+    def __str__(self):
+        return "{} {}".format(self.area, self.time)
 
+"""  
+Parameters:
+    - in_file: file containing the blocks and articles
+    - out_file: file to write the results
+"""
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python3.5 busca.py <file>")
+    if len(sys.argv) != 3:
+        print("Usage: python3.3 busca.py <in_file> <out_file>")
         sys.exit(1)
 
-    blocks = read_file("P2/entrada.txt")
-    print(blocks)
+    blocks = read_file(sys.argv[1])
+    for block in blocks:
+        print(block)
+
+    solutions = []
     # Search solution for each block timing it
     for block in blocks:
         time_start = time.perf_counter()
         area, articles = busca(block)
         time_end = time.perf_counter()
+
         total_time_ms = (time_end - time_start) * 1000
+        solutions.append(Solution(area, articles, total_time_ms))
         print("Area: {}, Time: {}".format(area, total_time_ms))
+    
+    # Write solutions to file
+    with open(sys.argv[2], "w") as f:
+        for solution in solutions:
+            f.write("{}\n".format(solution))
