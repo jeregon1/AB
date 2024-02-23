@@ -131,6 +131,16 @@ def check_overlap(article, articles):
 def sort_articles(articles):
     return sorted(articles, key=lambda a: a.w * a.h, reverse=True)
 
+
+class Solution:
+    def __init__(self, area, articles, time = .0):
+        self.area = area # in mm²
+        self.articles = articles
+        self.time = time # in ms
+
+    def __str__(self):
+        return "{} {:.6f}".format(self.area, self.time)
+    
 """
 Backtracking function that maximizes the area covered by articles in a block and calculates the total space occupied by them.
 Articles can't overlap and must be inside the page.
@@ -139,21 +149,27 @@ Returns the maximum area found and the list of articles that maximize it
 def busca(block):
     """ 
      1. Ordenar los artículos por área (w * h) de mayor a menor
-     2. Inicializar el área total ocupada por los artículos a 0
-     3. Dada la lista de artículos, para cada artículo, hacer:
-        - Si el artículo no se solapa con ningún otro artículo y está dentro de la página, entonces:
-            - Añadir el área del artículo al área total ocupada por los artículos
-            - Marcar el artículo como colocado
-            - Si el área total ocupada por los artículos es mayor que el área total ocupada por los artículos mejor hasta el momento, entonces:
+     2. Inicializar la solución al primer artículo, ya que asumimos que hay al menos un artículo
+     3. Para cada artículo que no está en la solución:
+        - Si el artículo no se solapa con ningún otro artículo de la solución, entonces:
+            - Calcular el nuevo área total ocupada por los artículos
+            - Si la nueva área total es mayor que la anterior, entonces:
                 - Actualizar el área total ocupada por los artículos mejor hasta el momento
                 - Actualizar la lista de artículos mejor hasta el momento
-                - Deshacer el artículo
+            - Llamar recursivamente a la función con el siguiente artículo
     4. Devolver el área total ocupada por los artículos mejor hasta el momento
+
+    Comentarios: La lista de artículos de la solución se pasa por referencia al ser un array, así que no es necesario devolverla
     """
-    block.articles = sort_articles(block.articles) # The base solution is the largest article, as we assume all articles fit in the page
+
+    # The base solution is the largest article, as we assume all articles fit in the page and there's at least one article
+    block.articles = sort_articles(block.articles) 
     max_articles = [block.articles[0]]
     max_area = calculate_area(max_articles)
-    return busca_backtracking(block, 1, max_area, max_articles)
+    solution = Solution(max_area, max_articles)
+
+    busca_backtracking(block, 1, solution)
+    return solution
     
 """
 Recursive function that looks for the best combination of articles to maximize the area covered by them
@@ -163,34 +179,20 @@ Parameters:
     - max_area: maximum area found so far
     - articles: list of articles that maximize the area
 """
-def busca_backtracking(block, i, max_area, max_articles):
+def busca_backtracking(block, i, solution):
     if i == block.n_articles: # Base case: all articles have been checked
-        return max_area, max_articles
+        return 
     
     for article in block.articles[i:]:
-        if not check_overlap(article, max_articles):
-            max_articles.append(article)
-            new_area = calculate_area(max_articles)
+        if not check_overlap(article, solution.articles):
 
-            if new_area > max_area:
-                max_area = new_area
-                max_articles = max_articles.copy()
-                
-            max_area, max_articles = busca_backtracking(block, i + 1, max_area, max_articles)
-            max_articles.pop()
+            new_area = calculate_area(solution.articles + [article])
+            if new_area > solution.area:
+                solution.area = new_area
+                solution.articles.append(article)
 
-    # If no new article has been added, return the current area and articles received as parameters
-    return max_area, max_articles
+            busca_backtracking(block, i + 1, solution)
 
-
-class Solution:
-    def __init__(self, area, articles, time):
-        self.area = area
-        self.articles = articles
-        self.time = time
-
-    def __str__(self):
-        return "{} {:.6f}".format(self.area, self.time)
 
 """  
 Parameters:
@@ -207,12 +209,12 @@ if __name__ == "__main__":
     # Search solution for each block timing it
     for block in blocks:
         time_start = time.perf_counter()
-        area, articles = busca(block)
+        solution = busca(block)
         time_end = time.perf_counter()
+        solution.time = (time_end - time_start) * 1000
 
-        total_time_ms = (time_end - time_start) * 1000
-        solutions.append(Solution(area, articles, total_time_ms))
-        print("Area: {} mm², Time: {:.6f} ms".format(area, total_time_ms))
+        solutions.append(solution)
+        print("Area: {} mm², Time: {:.6f} ms".format(solution.area, solution.time))
     
     # Write solutions to file
     with open(sys.argv[2], "w") as f:
