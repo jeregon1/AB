@@ -1,7 +1,8 @@
 #!/mnt/c/Users/jesus/anaconda3/envs/alg/python.exe
 #!/opt/csw/bin/python3
 
-import time, sys
+import sys
+from time import perf_counter
 
 """
 Search algorithm with backtracking that, given:
@@ -76,7 +77,7 @@ class Article:
         self.y = y
 
     def __str__(self):
-        return "Article with values--> w: {}, h: {}, x: {}, y: {}\n".format(self.w, self.h, self.x, self.y)
+        return "Article with values--> w: {}, h: {}, x: {}, y: {}".format(self.w, self.h, self.x, self.y)
 
 """ 
 Class that represents a block of articles
@@ -153,7 +154,7 @@ class Solution:
         self.nodes_generated = nodes_generated
 
     def __str__(self):
-        articles_str = '-'.join(str(article) for article in self.articles)
+        articles_str = '\n'.join(str(article) for article in self.articles)
         return "Area: {} mm², Time: {:.6f} ms, Nodes generated: {}\n List of articles: \n-{}".format(
             solution.area, solution.time, solution.nodes_generated, articles_str
         )
@@ -176,7 +177,7 @@ def busca(block):
             - Call the function recursively with the next article
     4. Return the total area occupied by the articles best so far
 
-    Comments: The list of articles of the solution is passed by reference as it is an array, so it is not necessary to return it
+    Comments: The list of articles of the solution is global to this function, so it is not necessary to return it
     """
 
     block.articles = sort_articles(block.articles) 
@@ -188,10 +189,10 @@ def busca(block):
         - i: index of the article to check (number of articles checked so far)
     """
     def busca_backtracking(i):
-        solution.nodes_generated += 1
         if i == block.n_articles: # Base case: all articles have been checked
             return 
         
+        solution.nodes_generated += 1
         for article in block.articles[i:]:
             if not check_overlap(article, solution.articles):
 
@@ -222,15 +223,16 @@ if __name__ == "__main__":
     solutions = []
     # Search solution for each block timing it
     for block in blocks:
-        time_start = time.perf_counter()
+        time_start = perf_counter()
         solution = busca(block)
-        time_end = time.perf_counter()
+        time_end = perf_counter()
         solution.time = (time_end - time_start) * 1000
 
         solutions.append(solution)
-        print("{}".format(solution))
     
     # Write solutions to file
     with open(sys.argv[2], "w") as f:
         for solution in solutions:
             f.write("{} {:.6f}".format(solution.area, solution.time))
+            for article in solution.articles:
+                f.write("\n{} {} {} {}".format(article.w, article.h, article.x, article.y))
