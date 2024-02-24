@@ -11,16 +11,21 @@ python3 busca.py fich_entrada fich_resultados
 Donde:
 - fich_entrada: es el fichero de entrada donde recoge los artículos de los distintos bloques
 - fich_resultados: es el fichero de salida donde se escribirán los resultados de la búsqueda.
-Se mostrará una línea por cada bloque con el área máxima y el tiempo de ejecución de la búsqueda.
+Se mostrará una línea por cada bloque con el área máxima y el tiempo de ejecución de la búsqueda
 
 ### Ejecución de los tests
 
-El script ejecutar.sh comprueba el correcto funcionamiento del programa busca.py ejecutando las siguientes tareas:
-- Aplicar el algoritmo de búsqueda al fichero de entrada introducido
-- Imprimir por pantalla el área máxima de cada bloque y el tiempo de ejecución
-- 🎃
-
 ```shell
 ./ejecutar.sh [fichero_entrada] [fichero_resultados]
-# Si no se especifica fichero_entrada, se ejecutará con todos los ficheros de prueba, generando para cada uno de ellos un fichero de resultados. "fichero_resultados" solo es necesario cuando se introduce manualmente un fichero de entrada.
 ```
+
+El script `ejecutar.sh` comprueba el correcto funcionamiento del programa busca.py ejecutando las siguientes tareas:
+- Si se le pasa un fichero de entrada: 
+    - ejecuta el programa con ese fichero
+    - guarda los resultados en un fichero de salida
+- Si no:
+    - ejecuta el programa con todos los ficheros de prueba (*1_prueba.txt, 2_singleArticle.txt, 3_moreArticles.txt*)
+    - guarda los resultados en un fichero de salida para cada fichero de prueba
+    - lanza el banco de pruebas `buscaTest.py` donde se realizan comprobaciones con casos de estudio específicos   
+
+Destacar que se imprime por pantalla información relativa a la solución de cada caso de prueba, así como el tiempo de ejecución de cada uno de ellos, comparando el **tiempo requerido** mediante el uso de <u>backtracking vs fuerza bruta</u>, junto a los **nodos generados** por cada uno de estos algoritmos.

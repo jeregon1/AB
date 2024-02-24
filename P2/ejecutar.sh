@@ -29,5 +29,6 @@ python3 ../busca.py $fich_3 "res_$fich_3"
 echo Fichero $fich_3 finalizado
 
 echo Tests:
+echo
 cd ..
 python3 buscaTest.py
