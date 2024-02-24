@@ -19,11 +19,15 @@ fich_3="3_moreArticles.txt"
 echo "Pruebas con los archivos de prueba"
 
 # Pruebo con los archivos de prueba
-echo Fichero: $fich_1; echo
 python3 ../busca.py $fich_1 "res_$fich_1"
+echo Fichero $fich_1 finalizado
 
-echo Fichero: $fich_2; echo
 python3 ../busca.py $fich_2 "res_$fich_2"
+echo Fichero $fich_2 finalizado
 
-echo Fichero: $fich_3; echo
 python3 ../busca.py $fich_3 "res_$fich_3"
+echo Fichero $fich_3 finalizado
+
+echo Tests:
+cd ..
+python3 buscaTest.py
