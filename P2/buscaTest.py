@@ -1,42 +1,57 @@
-import time
+from time import perf_counter
+from random import shuffle
 import unittest
 import itertools
-from busca import busca, Block, Article, calculate_area, check_overlap
+from busca import busca, Block, Article, Solution, calculate_area, check_overlap, read_file
+
+path_tests = 'pruebas/'
+test_files = ['1_prueba.txt', '3_moreArticles.txt']
 
 class TestBuscaEfficiency(unittest.TestCase):
     def brute_force(self, block):
-        max_area = 0
-        best_combination = None
+        solution = Solution(0, [])
         all_combinations = []
         for r in range(1, len(block.articles) + 1):
             all_combinations.extend(itertools.combinations(block.articles, r))
         
-        for r in range(1, len(block.articles) + 1):
-            for combination in all_combinations:
-                if all(not check_overlap(a, list(combination)) for a in combination):
-                    area = calculate_area(list(combination))
-                    if area > max_area:
-                        max_area = area
-                        best_combination = combination
-        return max_area, best_combination
+        solution.nodes_generated = len(all_combinations)
+        for combination in all_combinations:
+            if all(not check_overlap(a, [article for article in combination if article != a]) for a in combination):
+                area = calculate_area(list(combination))
+                if area > solution.area:
+                    solution.area = area
+                    solution.articles = combination
+        return solution
 
     def test_busca_efficiency(self):
         articles = [Article(10, 10, i * 15, i * 15) for i in range(10)]
         articles.append(Article(10, 10, 5, 5))
-        articles.append(Article(10, 10, 10, 10))
         articles.append(Article(10, 10, 30, 30))
+        articles.append(Article(10, 10, 100, 100))
         block = Block(len(articles), 200, 200, articles)
 
-        start = time.time()
-        busca_result = busca(block)
-        busca_time = time.time() - start
+        blocks = [block]
+        for test_file in test_files:
+            blocks.extend(read_file(path_tests + test_file))
 
-        start = time.time()
-        brute_force_result = self.brute_force(block)
-        brute_force_time = time.time() - start
+        for block in blocks:
+            shuffle(block.articles)
+            start = perf_counter()
+            busca_result = busca(block)
+            busca_time = (perf_counter() - start) * 1000
 
-        self.assertEqual(busca_result.area, brute_force_result[0])
-        self.assertLess(busca_time, brute_force_time)
+            start = perf_counter()
+            brute_force_result = self.brute_force(block)
+            brute_force_time = (perf_counter() - start) * 1000
+
+            print('\nBlock: {}'.format(block))
+            print('Backtracking: {:>9.6f}ms'.format(busca_time))
+            print('Brute force:  {:>9.6f}ms'.format(brute_force_time))
+            print('Nodes generated in backtracking: {}'.format(busca_result.nodes_generated))
+            print('Nodes generated in brute force:', brute_force_result.nodes_generated)
+            self.assertEqual(busca_result.area, brute_force_result.area)
+            self.assertLess(busca_time, brute_force_time)
+
 
 class TestBusca(unittest.TestCase):
     def test_busca(self):
