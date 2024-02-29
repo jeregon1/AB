@@ -167,7 +167,7 @@ Returns the maximum area found and the list of articles that maximize it
 def busca(block):
     """
     1. Sort articles by area (w * h) in descending order
-    2. Initialize the solution to the first article, assuming there is at least one article
+    2. Initialize the solution as empty
     3. For each article that is not in the solution:
         - If the article does not overlap with any other article in the solution, then:
             - Calculate the new total area occupied by the articles
