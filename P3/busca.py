@@ -74,11 +74,12 @@ A line for each block containing 2 numbers:
 Class that represents an article
 """
 class Article:
-    def __init__(self, w, h, x, y):
+    def __init__(self, w, h, x, y, area = 0):
         self.w = w
         self.h = h
         self.x = x
         self.y = y
+        self.area = w * h
 
     def __str__(self):
         return "Article with values--> w: {}, h: {}, x: {}, y: {}".format(self.w, self.h, self.x, self.y)
@@ -124,7 +125,7 @@ Calculates the area occupied by a list of articles
 def calculate_area(articles):
     area = 0
     for article in articles:
-        area += article.w * article.h
+        area += article.area
     return area
 
 """
@@ -158,58 +159,105 @@ class Solution:
         self.nodes_generated = nodes_generated
 
     def __str__(self):
-        articles_str = '\n'.join(str(article) for article in self.articles)
-        return "Area: {} mm², Time: {:.6f} ms, Nodes generated: {}\n List of articles: \n-{}".format(
-            solution.area, solution.time, solution.nodes_generated, articles_str
+        articles_str = '\n- '.join(str(article) for article in self.articles)
+        return "Area: {} mm², Time: {:.6f} ms, Nodes generated: {}\n List of articles: \n- {}".format(
+            self.area, self.time, self.nodes_generated, articles_str
         )
+
+"""
+1. Define the state of the dynamic programming solution. In this case, a state can be defined by the index 
+   of the current article and the remaining width and height of the page.
+
+2. Define the base case. If there are no more articles to consider or no more space on the page, the maximum area is 0.
+
+3. Define the transition function. For each article, you have two choices: include it or exclude it. 
+   If you include it, the remaining width and height of the page decrease by the width and height of the article, 
+   and the total area increases by the area of the article. If you exclude it, the remaining width and height of the 
+   page and the total area remain the same. The maximum area for the current state is the maximum of the areas obtained 
+   by including and excluding the current article.
+
+4. Implement the dynamic programming solution. You can use a 3D array to store the maximum area for each state. 
+   Start from the base case and use the transition function to fill in the array.
+
+5. Extract the solution. The maximum area is stored in the array. To find the articles that make up this area, 
+   you can backtrack from the final state to the base case, at each step choosing the article that was included 
+   in the optimal solution.
+
+   
+Recurrence relation:
+    - f(i, w, h) = max(f(i + 1, w, h), f(i + 1, w - wi, h - hi) + wi * hi)
+    - f(i, w, h) = 0 if i == n or w == 0 or h == 0
+"""
+
+
+"""
+Recursive solution that maximizes the area covered by articles in a block and calculates the total space occupied by them.
+Articles can't overlap and must be inside the page.
+"""
+def busca_recursive(block) -> Solution:
+    def busca(block, index, areaTotal) -> Solution:
+        # Base case
+        if index == -1 or areaTotal == 0:
+            return Solution(0, [])
+
+        article = block.articles[index]
+
+        # print('   ' * (block.n_articles - index) + f'Index: {index}, AreaTotal: {areaTotal}, Article: {article.w}x{article.h}, AreaArticle: {article.area}')
+        # g(j-1, c)
+        solution_exclude = busca(block, index - 1, areaTotal)
+
+        if check_overlap(article, solution_exclude.articles) or areaTotal < article.area:
+            # print('   ' * (block.n_articles - index) + f'return exclude1: {solution_exclude.area}')
+            return solution_exclude
+        else:
+            # g(j-1, c - wj, h - hj) + wj * hj
+            solution_include = busca(block, index - 1, areaTotal - article.area)
+            solution_include.area += article.area
+            solution_include.articles.append(article)
+
+            if solution_exclude.area >= solution_include.area:
+                # print('   ' * (block.n_articles - index) + f'return exclude2: {solution_exclude.area}')
+                return solution_exclude
+            else: 
+                # print('   ' * (block.n_articles - index) + f'return include : {solution_include.area}')
+                return solution_include
     
+    block.articles = sort_articles(block.articles)
+    return busca(block, block.n_articles - 1, block.W * block.H)
 
 
-def busca_recursive(block, index=0, memo={}):
-    if index == len(block):
-        return Solution(0, [])
-    if index in memo:
-        return memo[index]
-    article = block[index]
-    # Exclude the current article
-    exclude = busca_recursive(block, index + 1)
-    # Include the current article
-    include = busca_recursive(block, index + 1)
-    include.total_area += article.area
-    include.articles.append(article)
-    # Choose the solution with the maximum area
-    solution = max(include, exclude, key=lambda x: x.total_area)
-    memo[index] = solution
-    return solution
 
+def busca_iterative(block) -> Solution:
+    block.articles = sort_articles(block.articles)
+    areaTotal = block.W * block.H
+    n = block.n_articles
+    memo = [Solution(0, []) for _ in range(n + 1)]
+    
+    for i in range(1, n + 1):
+        print(f'Index: {i}, AreaTotal: {areaTotal}')
+        article = block.articles[i - 1]
 
-def busca_iterative(block):
-    n = len(block)
-    dp = [Solution(0, []) for _ in range(n + 1)]
-    for i in range(n - 1, -1, -1):
-        article = block[i]
+        if check_overlap(article, memo[i - 1].articles) or areaTotal < article.area:
+            print(f'Overlap: {article.w}x{article.h}')
+            memo[i] = memo[i - 1]
+            continue
+
         # Exclude the current article
-        exclude = dp[i + 1]
-        # Include the current article
-        include = Solution(dp[i + 1].total_area + article.area, dp[i + 1].articles + [article])
+        exclude = memo[i - 1]
+        
+        include = Solution(memo[i - 1].area + article.area, memo[i - 1].articles + [article])
+
         # Choose the solution with the maximum area
-        dp[i] = max(include, exclude, key=lambda x: x.total_area)
-    return dp[0]
-
-# """
-# Dynamic programming function that maximizes the area covered by articles in a block and calculates the total space occupied by them.
-# Articles can't overlap and must be inside the page.
-# Returns the maximum area found and the list of articles that maximize it
-# """
-# def busca(block):
-
-#     solution = Solution(0, [])
+        memo[i] = max(include, exclude, key=lambda x: x.area)
+        if memo[i] == include:
+            print(f'Include: {article.w}x{article.h}')
+            areaTotal -= article.area
+        else:
+            print(f'Exclude: {article.w}x{article.h}')
+    return memo[n]
 
 
-#     return solution
-
-
-"""  
+"""
 Parameters:
     - [-r | -i]: option to choose between using recursive or iterative solution
     - in_file: file containing the blocks and articles
@@ -220,40 +268,31 @@ if __name__ == "__main__":
         print("Usage: python3.3 busca.py [-r | -i] <in_file> <out_file>")
         sys.exit(1)
 
-    option = sys.argv[1]    
+    option = sys.argv[1]
+    if   option == "-r": busca_function = busca_recursive
+    elif option == "-i": busca_function = busca_iterative
+    else:
+        print("Usage: python3.3 busca.py [-r | -i] <in_file> <out_file>")
+        sys.exit(1)
+        
     blocks = read_file(sys.argv[2])
-    recursive_solutions = []
-    iterative_solutions = []
+    solutions = []
     # Search solution for each block timing it
     for block in blocks:
-        if option == "-r":
-            time_start = perf_counter()
-            recursive_solution = busca_recursive(block) 
-            time_end = perf_counter()
-            recursive_solution.time = (time_end - time_start) * 1000
-
-            recursive_solutions.append(recursive_solution)
-        else:
-            time_start = perf_counter()
-            iterative_solution = busca_iterative(block)
-            time_end = perf_counter()
-            iterative_solution.time = (time_end - time_start) * 1000
-
-            iterative_solutions.append(iterative_solution)
+        print(block)
+        time_start = perf_counter()
+        solution = busca_function(block) 
+        time_end = perf_counter()
+        solution.time = (time_end - time_start) * 1000
+        solutions.append(solution)
+        print(solution.area)
     
     # Write recursive and iterative solutions to the file
     with open(sys.argv[3], "w") as f:
-        if option == "-r":
-            f.write("########## Recursive Solution ##########\n")
-            for solution in recursive_solutions:
-                f.write("{} {:.6f}".format(solution.area, solution.time))
-                for article in solution.articles:
-                    f.write("\n{} {} {} {}".format(article.w, article.h, article.x, article.y))
-
-        else:
-            f.write("########## Iterative Solution ##########\n")
-            for solution in iterative_solutions:
-                f.write("{} {:.6f}".format(solution.area, solution.time))
-                for article in solution.articles:
-                    f.write("\n{} {} {} {}".format(article.w, article.h, article.x, article.y))
-
+        if option == "-r": f.write("########## Recursive Solution ##########\n")
+        else:              f.write("########## Iterative Solution ##########\n")
+        for solution in solutions:
+            f.write("{} {:.6f}".format(solution.area, solution.time))
+            for article in solution.articles:
+                f.write("\n{} {} {} {}".format(article.w, article.h, article.x, article.y))
+            f.write("\n")

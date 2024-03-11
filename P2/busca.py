@@ -156,7 +156,7 @@ class Solution:
     def __str__(self):
         articles_str = '\n'.join(str(article) for article in self.articles)
         return "Area: {} mm², Time: {:.6f} ms, Nodes generated: {}\n List of articles: \n-{}".format(
-            solution.area, solution.time, solution.nodes_generated, articles_str
+            self.area, self.time, self.nodes_generated, articles_str
         )
     
 """
@@ -236,3 +236,4 @@ if __name__ == "__main__":
             f.write("{} {:.6f}".format(solution.area, solution.time))
             for article in solution.articles:
                 f.write("\n{} {} {} {}".format(article.w, article.h, article.x, article.y))
+            f.write("\n")
