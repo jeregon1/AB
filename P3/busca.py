@@ -204,12 +204,10 @@ def busca_recursive(block) -> Solution:
 
         article = block.articles[index]
 
-        # print('   ' * (block.n_articles - index) + f'Index: {index}, AreaTotal: {areaTotal}, Article: {article.w}x{article.h}, AreaArticle: {article.area}')
         # g(j-1, c)
         solution_exclude = busca(block, index - 1, areaTotal)
 
         if article.overlaps(solution_exclude.articles) or areaTotal < article.area:
-            # print('   ' * (block.n_articles - index) + f'return exclude1: {solution_exclude.area}')
             return solution_exclude
         else:
             # g(j-1, c - wj, h - hj) + wj * hj
@@ -219,7 +217,7 @@ def busca_recursive(block) -> Solution:
 
             result = max(solution_exclude, solution_include, key=lambda solution: solution.area)
             return result
-    
+
     block.sort_articles()
     return busca(block, block.n_articles - 1, block.W * block.H)
 
@@ -232,11 +230,9 @@ def busca_iterative(block) -> Solution:
     memo = [Solution(0, []) for _ in range(n + 1)]
     
     for i in range(1, n + 1):
-        # print('Index: {}, AreaTotal: {}'.format(i, areaTotal))
         article = block.articles[i - 1]
 
         if article.overlaps(memo[i - 1].articles) or areaTotal < article.area:
-            # print('Overlap: {}x{}'.format(article.w, article.h))
             memo[i] = memo[i - 1]
             continue
 
@@ -248,10 +244,7 @@ def busca_iterative(block) -> Solution:
         # Choose the solution with the maximum area
         memo[i] = max(include, exclude, key=lambda x: x.area)
         if memo[i] == include:
-            # print('Include: {}x{}'.format(article.w, article.h))
             areaTotal -= article.area
-        # else:
-        #     print('Exclude: {}x{}'.format(article.w, article.h))
     return memo[n]
 
 
@@ -263,18 +256,16 @@ Parameters:
 """
 if __name__ == "__main__":
     if len(sys.argv) != 4:
-        print("Usage: python3.3 busca.py [-r | -i] <in_file> <out_file>")
+        print("Usage: python3 busca.py [-r | -i] <in_file> <out_file>")
         sys.exit(1)
-
-        
 
     option = sys.argv[1]
     if   option == "-r": busca_function = busca_recursive
     elif option == "-i": busca_function = busca_iterative
     else:
-        print("Usage: python3.3 busca.py [-r | -i] <in_file> <out_file>")
+        print("Usage: python3 busca.py [-r | -i] <in_file> <out_file>")
         sys.exit(1)
-        
+
     blocks = read_file(sys.argv[2])
     solutions = []
     # Search solution for each block timing it
@@ -284,13 +275,10 @@ if __name__ == "__main__":
         time_end = perf_counter()
         solution.time = (time_end - time_start) * 1000
         solutions.append(solution)
-    
+
     # Write recursive and iterative solutions to the file
     with open(sys.argv[3], "w") as f:
-        if option == "-r": f.write("\tRecursive Solution\n")
-        else:              f.write("\tIterative Solution\n")
         for solution in solutions:
-            f.write("{} {:.6f}".format(solution.area, solution.time))
+            f.write("{} {:.6f}\n".format(solution.area, solution.time))
             for article in solution.articles:
-                f.write("\n{} {} {} {}".format(article.w, article.h, article.x, article.y))
-            f.write("\n")
+                f.write("{} {} {} {}\n".format(article.w, article.h, article.x, article.y))
