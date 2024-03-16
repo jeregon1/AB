@@ -1,0 +1,3 @@
+	Iterative Solution
+100 0.015300
+10 10 15 15

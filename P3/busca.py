@@ -81,6 +81,22 @@ class Article:
         self.y = y
         self.area = w * h
 
+        self.start = (x, y)
+        self.end = (x + w, y + h)
+
+    """
+    Checks if an article overlaps with any other article in a list
+    """
+    def overlaps(self, articles):
+        for a in articles:
+            article_is_left = self.x + self.w <= a.x
+            article_is_right = a.x + a.w <= self.x
+            article_is_up = self.y + self.h <= a.y
+            article_is_down = a.y + a.h <= self.y
+            if not (article_is_left or article_is_right or article_is_up or article_is_down):
+                return True
+        return False
+
     def __str__(self):
         return "Article with values--> w: {}, h: {}, x: {}, y: {}".format(self.w, self.h, self.x, self.y)
 
@@ -93,6 +109,10 @@ class Block:
         self.W = W
         self.H = H
         self.articles = articles
+
+    # Sort articles by end coordinates
+    def sort_articles(self):
+        self.articles.sort(key=lambda a: a.end, reverse=True)
 
     def __str__(self):
         articles_str = ""
@@ -127,25 +147,6 @@ def calculate_area(articles):
     for article in articles:
         area += article.area
     return area
-
-"""
-Checks if an article overlaps with any other article in a list
-"""
-def check_overlap(article, articles):
-    for a in articles:
-        article_is_left = article.x + article.w <= a.x
-        article_is_right = a.x + a.w <= article.x
-        article_is_up = article.y + article.h <= a.y
-        article_is_down = a.y + a.h <= article.y
-        if not (article_is_left or article_is_right or article_is_up or article_is_down):
-            return True
-    return False
-
-"""
-Sorts a list of articles by area (w * h) in descending order
-"""
-def sort_articles(articles):
-    return sorted(articles, key=lambda a: a.w * a.h, reverse=True)
 
 
 """
@@ -195,6 +196,7 @@ Recursive solution that maximizes the area covered by articles in a block and ca
 Articles can't overlap and must be inside the page.
 """
 def busca_recursive(block) -> Solution:
+
     def busca(block, index, areaTotal) -> Solution:
         # Base case
         if index == -1 or areaTotal == 0:
@@ -206,7 +208,7 @@ def busca_recursive(block) -> Solution:
         # g(j-1, c)
         solution_exclude = busca(block, index - 1, areaTotal)
 
-        if check_overlap(article, solution_exclude.articles) or areaTotal < article.area:
+        if article.overlaps(solution_exclude.articles) or areaTotal < article.area:
             # print('   ' * (block.n_articles - index) + f'return exclude1: {solution_exclude.area}')
             return solution_exclude
         else:
@@ -215,45 +217,41 @@ def busca_recursive(block) -> Solution:
             solution_include.area += article.area
             solution_include.articles.append(article)
 
-            if solution_exclude.area >= solution_include.area:
-                # print('   ' * (block.n_articles - index) + f'return exclude2: {solution_exclude.area}')
-                return solution_exclude
-            else: 
-                # print('   ' * (block.n_articles - index) + f'return include : {solution_include.area}')
-                return solution_include
+            result = max(solution_exclude, solution_include, key=lambda solution: solution.area)
+            return result
     
-    block.articles = sort_articles(block.articles)
+    block.sort_articles()
     return busca(block, block.n_articles - 1, block.W * block.H)
 
 
 
 def busca_iterative(block) -> Solution:
-    block.articles = sort_articles(block.articles)
+    block.sort_articles()
     areaTotal = block.W * block.H
     n = block.n_articles
     memo = [Solution(0, []) for _ in range(n + 1)]
     
     for i in range(1, n + 1):
-        print(f'Index: {i}, AreaTotal: {areaTotal}')
+        # print('Index: {}, AreaTotal: {}'.format(i, areaTotal))
         article = block.articles[i - 1]
 
-        if check_overlap(article, memo[i - 1].articles) or areaTotal < article.area:
-            print(f'Overlap: {article.w}x{article.h}')
+        if article.overlaps(memo[i - 1].articles) or areaTotal < article.area:
+            # print('Overlap: {}x{}'.format(article.w, article.h))
             memo[i] = memo[i - 1]
             continue
 
         # Exclude the current article
         exclude = memo[i - 1]
-        
+
         include = Solution(memo[i - 1].area + article.area, memo[i - 1].articles + [article])
 
         # Choose the solution with the maximum area
         memo[i] = max(include, exclude, key=lambda x: x.area)
         if memo[i] == include:
-            print(f'Include: {article.w}x{article.h}')
+            # print('Include: {}x{}'.format(article.w, article.h))
             areaTotal -= article.area
-        else:
-            print(f'Exclude: {article.w}x{article.h}')
+        # else:
+        #     print('Exclude: {}x{}'.format(article.w, article.h))
     return memo[n]
 
 
@@ -268,6 +266,8 @@ if __name__ == "__main__":
         print("Usage: python3.3 busca.py [-r | -i] <in_file> <out_file>")
         sys.exit(1)
 
+        
+
     option = sys.argv[1]
     if   option == "-r": busca_function = busca_recursive
     elif option == "-i": busca_function = busca_iterative
@@ -279,18 +279,16 @@ if __name__ == "__main__":
     solutions = []
     # Search solution for each block timing it
     for block in blocks:
-        print(block)
         time_start = perf_counter()
         solution = busca_function(block) 
         time_end = perf_counter()
         solution.time = (time_end - time_start) * 1000
         solutions.append(solution)
-        print(solution.area)
     
     # Write recursive and iterative solutions to the file
     with open(sys.argv[3], "w") as f:
-        if option == "-r": f.write("########## Recursive Solution ##########\n")
-        else:              f.write("########## Iterative Solution ##########\n")
+        if option == "-r": f.write("\tRecursive Solution\n")
+        else:              f.write("\tIterative Solution\n")
         for solution in solutions:
             f.write("{} {:.6f}".format(solution.area, solution.time))
             for article in solution.articles:
