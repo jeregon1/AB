@@ -221,7 +221,10 @@ def busca_recursive(block) -> Solution:
     block.sort_articles()
     return busca(block, block.n_articles - 1, block.W * block.H)
 
-
+"""
+Iterative solution that maximizes the area covered by articles in a block and calculates the total space occupied by them.
+Articles can't overlap and must be inside the page.
+"""
 
 def busca_iterative(block) -> Solution:
     block.sort_articles()
@@ -247,6 +250,30 @@ def busca_iterative(block) -> Solution:
             areaTotal -= article.area
     return memo[n]
 
+"""
+A simple Greedy Heuristic could be to sort the articles by their area in descending order and then place each article 
+on the page in that order, as long as it doesn't overlap with any previously placed articles and fits within the page. 
+This heuristic is based on the idea that placing larger articles first will maximize the total area occupied by the articles.
+
+Here is a pseudocode for the Greedy Heuristic:
+
+function greedy_solution(block):
+    sort block.articles by area in descending order
+    create an empty list selected_articles
+    for each article in block.articles:
+        if article does not overlap with any article in selected_articles and fits within the page:
+            add article to selected_articles
+    return selected_articles
+"""
+def greedy_solution(block) -> Solution:
+    block.sort_articles()
+    areaTotal = block.W * block.H
+    selected_articles = []
+    for article in block.articles:
+        if not article.overlaps(selected_articles) and areaTotal >= article.area:
+            selected_articles.append(article)
+            areaTotal -= article.area
+    return Solution(calculate_area(selected_articles), selected_articles)
 
 """
 Parameters:
@@ -262,6 +289,7 @@ if __name__ == "__main__":
     option = sys.argv[1]
     if   option == "-r": busca_function = busca_recursive
     elif option == "-i": busca_function = busca_iterative
+    elif option == "-g": busca_function = greedy_solution
     else:
         print("Usage: python3 busca.py [-r | -i] <in_file> <out_file>")
         sys.exit(1)
