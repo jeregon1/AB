@@ -20,8 +20,13 @@ ficheros="1_prueba.txt 2_singleArticle.txt 3_moreArticles.txt"
 for fich in $ficheros
 do
     echo -e "########## Ejecutando pruebas con $fich ##########"
+    echo -e "\tRecursiva"
     python3 busca.py -r pruebas/$fich pruebas/res_$fich
     cat pruebas/res_$fich
+    echo -e "\tIterativa"
     python3 busca.py -i pruebas/$fich pruebas/res_$fich
+    cat pruebas/res_$fich
+    echo -e "\tVoraz"
+    python3 busca.py -g pruebas/$fich pruebas/res_$fich
     cat pruebas/res_$fich
 done

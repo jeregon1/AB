@@ -1,0 +1,141 @@
+A continuación se aportan los distintos resultados obtenidos durante la
+experimentación de varios casos de estudio:
+
+########## Ejecutando pruebas con 1_prueba.txt ##########
+        Recursiva
+400 0.068524
+20 10 25 15
+10 10 15 15
+10 10 0 0
+8000 0.034672
+90 80 70 60
+20 30 40 50
+10 20 30 40
+        Iterativa
+400 0.079987
+20 10 25 15
+10 10 15 15
+10 10 0 0
+8000 0.045158
+90 80 70 60
+20 30 40 50
+10 20 30 40
+        P2
+400 0.029705
+20 10 20 20
+10 10 0 0
+10 10 10 10
+8000 0.010972
+90 80 70 60
+20 30 40 50
+10 20 30 40
+########## Ejecutando pruebas con 2_singleArticle.txt ##########
+        Recursiva
+100 0.036627
+10 10 15 15
+        Iterativa
+100 0.036357
+10 10 15 15
+        P2
+100 0.013808
+10 10 15 15
+########## Ejecutando pruebas con 3_moreArticles.txt ##########
+        Recursiva
+425 0.131012
+20 10 25 15
+10 10 15 15
+5 5 15 25
+10 10 0 0
+8300 0.120370
+90 80 70 60
+20 30 40 50
+10 20 30 40
+20 10 20 20
+10 10 10 10
+        Iterativa
+425 0.122141
+20 10 25 15
+10 10 15 15
+5 5 15 25
+10 10 0 0
+8300 0.086031
+90 80 70 60
+20 30 40 50
+10 20 30 40
+20 10 20 20
+10 10 10 10
+        P2
+425 0.044211
+20 10 20 20
+10 10 0 0
+10 10 10 10
+5 5 15 25
+8300 0.022455
+90 80 70 60
+20 30 40 50
+10 20 30 40
+20 10 20 20
+10 10 10 10
+
+Como se puede apreciar, se obtienen las mismas soluciones en cuanto a área maximizada, a pesar de que
+el order de los artículos elegidos a veces varía.
+
+En cuanto a tiempos, se aprecia cómo la solución por backtracking siempre es la mejor entre las 3 
+posibilidades. Entre la solución Recursiva y la solución Iterativa, se aprecia cómo según el caso
+de estudio se desempeña mejor un algoritmo que otro, pero se obtienen siempre resultados muy parejos.
+
+*BOLA EXTRA*
+Sí que se puede utilizar un algoritmo voraz.
+
+Un heurística voraz podría ser ordenar los artículos 🎃por su área🎃 en orden descendente y luego colocar cada artículo 
+en la página en ese orden, siempre y cuando no se superponga con ningún artículo colocado previamente y que quepa en la página.
+Esta heurística se basa en la idea de que colocar los artículos más grandes primero maximizará el área total ocupada por los artículos.
+
+En este caso, se aprecia que esta solución es realmente buena, llegado incluso a superar a la de la P2 en '2_singleArticle.txt'.
+Sin embargo, generalizando, la mejor solución de las 4 posibles es la de backtracking, aunque seguida de cerca por la voraz.
+
+Resultados:
+########## Ejecutando pruebas con 1_prueba.txt ##########
+        Voraz
+400 0.026906
+20 10 25 15
+10 10 15 15
+10 10 0 0
+8000 0.039061
+90 80 70 60
+20 30 40 50
+10 20 30 40
+########## Ejecutando pruebas con 2_singleArticle.txt ##########
+        Voraz
+100 0.011385
+10 10 15 15
+########## Ejecutando pruebas con 3_moreArticles.txt ##########
+        Voraz
+425 0.066150
+20 10 25 15
+10 10 15 15
+5 5 15 25
+10 10 0 0
+8300 0.023249
+90 80 70 60
+20 30 40 50
+10 20 30 40
+20 10 20 20
+10 10 10 10
+
+            COMPARACIÓN FINAL TIEMPOS:
+* 1_prueba.txt
+    -Recursiva: 0.068524 + 0.034672 = 0.103196
+    -Iterativa: 0.079987 + 0.045158 = 0.125145
+    -P2: 0.029705 + 0.010972 = 0.040677
+    -Voraz: 0.026906 + 0.039061 = 0.065967
+* 2_singleArticle.txt
+    -Recursiva: 0.036627
+    -Iterativa: 0.036357
+    -P2: 0.013808
+    -Voraz: 0.011385
+* 3_moreArticles.txt
+    -Recursiva: 0.131012 + 0.120370 = 0.251382
+    -Iterativa: 0.122141 + 0.086031 = 0.208172
+    -P2: 0.044211 + 0.022455 = 0.066666
+    -Voraz: 0.066150 + 0.023249 = 0.089399
