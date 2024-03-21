@@ -10,13 +10,12 @@ then
     echo "Ejecutando pruebas con $2"
     opcion=$1
     fich=$2
-    python3 busca.py $opcion pruebas/$fich pruebas/res_$fich
-    cat pruebas/res_$fich
+    python3 busca.py $opcion pruebas/$fich pruebas/res_$fich && cat pruebas/res_$fich
     exit 0
 fi
 
 
-for fich in 1_prueba.txt 2_singleArticle.txt 3_moreArticles.txt
+for fich in 1_prueba.txt 2_singleArticle.txt 3_moreArticles.txt 4_tricky.txt
 do
     echo -e "########## Ejecutando pruebas con $fich ##########"
     echo -e "\tRecursiva"

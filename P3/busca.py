@@ -81,9 +81,6 @@ class Article:
         self.y = y
         self.area = w * h
 
-        self.start = (x, y)
-        self.end = (x + w, y + h)
-
     """
     Checks if an article overlaps with any other article in a list
     """
@@ -110,9 +107,8 @@ class Block:
         self.H = H
         self.articles = articles
 
-    # Sort articles by end coordinates
     def sort_articles(self):
-        self.articles.sort(key=lambda a: a.end, reverse=True)
+        self.articles.sort(key=lambda a: a.area, reverse=True)
 
     def __str__(self):
         articles_str = ""
@@ -196,84 +192,90 @@ Recursive solution that maximizes the area covered by articles in a block and ca
 Articles can't overlap and must be inside the page.
 """
 def busca_recursive(block) -> Solution:
+    block.sort_articles()
 
-    def busca(block, index, areaTotal) -> Solution:
+    def busca(index, articlesInSolution) -> Solution:
         # Base case
-        if index == -1 or areaTotal == 0:
+        if index == -1:
             return Solution(0, [])
 
         article = block.articles[index]
 
         # g(j-1, c)
-        solution_exclude = busca(block, index - 1, areaTotal)
+        solution_exclude = busca(index - 1, articlesInSolution)
 
-        if article.overlaps(solution_exclude.articles) or areaTotal < article.area:
+        if article.overlaps(articlesInSolution):
             return solution_exclude
         else:
             # g(j-1, c - wj, h - hj) + wj * hj
-            solution_include = busca(block, index - 1, areaTotal - article.area)
+            solution_include = busca(index - 1, articlesInSolution + [article])
             solution_include.area += article.area
             solution_include.articles.append(article)
 
-            result = max(solution_exclude, solution_include, key=lambda solution: solution.area)
-            return result
+            solution = max(solution_exclude, solution_include, key=lambda solution: solution.area)
+            return solution
 
-    block.sort_articles()
-    return busca(block, block.n_articles - 1, block.W * block.H)
+    return busca(block.n_articles - 1, [])
 
 """
 Iterative solution that maximizes the area covered by articles in a block and calculates the total space occupied by them.
 Articles can't overlap and must be inside the page.
 """
-
 def busca_iterative(block) -> Solution:
     block.sort_articles()
-    areaTotal = block.W * block.H
     n = block.n_articles
-    memo = [Solution(0, []) for _ in range(n + 1)]
-    
-    for i in range(1, n + 1):
-        article = block.articles[i - 1]
 
-        if article.overlaps(memo[i - 1].articles) or areaTotal < article.area:
-            memo[i] = memo[i - 1]
-            continue
+    # Initialize memoization table
+    memo = {0: Solution(0, [])}
 
-        # Exclude the current article
-        exclude = memo[i - 1]
+    for i in range(1, 2**n):
+        memo[i] = Solution(0, [])
+        for j in range(n):
+            # Check if the j-th article is included in the i-th subset
+            article_in_subset = ((i >> j) & 1 != 0)
+            if not article_in_subset:
+                continue
 
-        include = Solution(memo[i - 1].area + article.area, memo[i - 1].articles + [article])
+            article = block.articles[j]
+            sol_without_j = memo[i ^ (1 << j)] # This is the solution for the subset i without the j-th article
+            # If the article overlaps with any article in the solution
+            # then we don't consider it
+            if article.overlaps(sol_without_j.articles):
+                continue
 
-        # Choose the solution with the maximum area
-        memo[i] = max(include, exclude, key=lambda x: x.area)
-        if memo[i] == include:
-            areaTotal -= article.area
-    return memo[n]
+            # We check if the solution with j is better than the solution without j for the subset i
+            temp = Solution(sol_without_j.area + article.area, sol_without_j.articles + [article])
+            if temp.area > memo[i].area:
+                memo[i] = temp
+
+    # Find the solution with the maximum area
+    return max(memo.values(), key=lambda solution: solution.area)
 
 """
-A simple Greedy Heuristic could be to sort the articles by their area in descending order and then place each article 
-on the page in that order, as long as it doesn't overlap with any previously placed articles and fits within the page. 
-This heuristic is based on the idea that placing larger articles first will maximize the total area occupied by the articles.
-
-Here is a pseudocode for the Greedy Heuristic:
-
-function greedy_solution(block):
-    sort block.articles by area in descending order
-    create an empty list selected_articles
-    for each article in block.articles:
-        if article does not overlap with any article in selected_articles and fits within the page:
-            add article to selected_articles
-    return selected_articles
+A simple and smart greedy heuristic would be to order the articles by area divided by the number of overlaps with other articles.
+Then, we can iterate over the sorted articles and add them to the solution if they don't overlap with any other article in the solution.
 """
 def greedy_solution(block) -> Solution:
-    block.sort_articles()
-    areaTotal = block.W * block.H
-    selected_articles = []
+    # First, we sort the articles by area divided by the number of overlaps with other articles
+    # Calculate the number of overlaps for each article
+    overlaps = {}
+    for i, article_i in enumerate(block.articles):
+        overlaps[article_i] = 1 # We count the overlap with itself (avoiding division by 0 later on)
+        for j, article_j in enumerate(block.articles):
+            if i != j and not article_i.overlaps([article_j]):
+                overlaps[article_i] += 1
+
+    block.articles.sort(key=lambda a: a.area / overlaps[a], reverse=True)
+
+    # Then, we iterate over the sorted articles and add them to the solution if they don't overlap with any other article in the solution
+    solution = Solution(0, [])
     for article in block.articles:
-        if not article.overlaps(selected_articles) and areaTotal >= article.area:
-            selected_articles.append(article)
-            areaTotal -= article.area
-    return Solution(calculate_area(selected_articles), selected_articles)
+        if not article.overlaps(solution.articles):
+            solution.area += article.area
+            solution.articles.append(article)
+
+    return solution
+
 
 """
 Parameters:
