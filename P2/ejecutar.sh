@@ -15,6 +15,7 @@ cd pruebas
 fich_1="1_prueba.txt"
 fich_2="2_singleArticle.txt"
 fich_3="3_moreArticles.txt"
+fich_4="4_tricky.txt"
 
 echo "Pruebas con los archivos de prueba"
 
@@ -27,6 +28,9 @@ echo Fichero $fich_2 finalizado
 
 python3 ../busca.py $fich_3 "res_$fich_3"
 echo Fichero $fich_3 finalizado
+
+python3 ../busca.py $fich_4 "res_$fich_4"
+echo Fichero $fich_4 finalizado
 
 echo Tests:
 echo

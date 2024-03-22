@@ -228,6 +228,7 @@ def busca_iterative(block) -> Solution:
     # Initialize memoization table
     memo = {0: Solution(0, [])}
 
+    # Iterate over all possible subsets of articles (represented as binary numbers)
     for i in range(1, 2**n):
         memo[i] = Solution(0, [])
         for j in range(n):
@@ -291,15 +292,15 @@ function greedy_solution(block):
             add article to selected_articles
     return selected_articles
 """
-def greedy_solution(block) -> Solution:
-    block.sort_articles()
-    areaTotal = block.W * block.H
-    selected_articles = []
-    for article in block.articles:
-        if not article.overlaps(selected_articles) and areaTotal >= article.area:
-            selected_articles.append(article)
-            areaTotal -= article.area
-    return Solution(calculate_area(selected_articles), selected_articles)
+# def greedy_solution(block) -> Solution:
+#     block.sort_articles()
+#     areaTotal = block.W * block.H
+#     selected_articles = []
+#     for article in block.articles:
+#         if not article.overlaps(selected_articles) and areaTotal >= article.area:
+#             selected_articles.append(article)
+#             areaTotal -= article.area
+#     return Solution(calculate_area(selected_articles), selected_articles)
 
 """
 Parameters:

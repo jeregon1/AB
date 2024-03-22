@@ -3,139 +3,139 @@ experimentación de varios casos de estudio:
 
 ########## Ejecutando pruebas con 1_prueba.txt ##########
         Recursiva
-400 0.068524
+400 0.309986
 20 10 25 15
-10 10 15 15
 10 10 0 0
-8000 0.034672
+10 10 15 15
+8000 0.136958
 90 80 70 60
 20 30 40 50
 10 20 30 40
         Iterativa
-400 0.079987
-20 10 25 15
+400 0.119037
 10 10 15 15
 10 10 0 0
-8000 0.045158
-90 80 70 60
-20 30 40 50
+20 10 25 15
+8000 0.174675
 10 20 30 40
-        P2
-400 0.029705
-20 10 20 20
-10 10 0 0
-10 10 10 10
-8000 0.010972
-90 80 70 60
 20 30 40 50
-10 20 30 40
+90 80 70 60
 ########## Ejecutando pruebas con 2_singleArticle.txt ##########
         Recursiva
-100 0.036627
+100 0.020459
 10 10 15 15
         Iterativa
-100 0.036357
-10 10 15 15
-        P2
-100 0.013808
+100 0.045933
 10 10 15 15
 ########## Ejecutando pruebas con 3_moreArticles.txt ##########
         Recursiva
-425 0.131012
+425 0.387772
 20 10 25 15
+10 10 0 0
 10 10 15 15
 5 5 15 25
-10 10 0 0
-8300 0.120370
+8300 0.851605
 90 80 70 60
 20 30 40 50
 10 20 30 40
 20 10 20 20
 10 10 10 10
         Iterativa
-425 0.122141
-20 10 25 15
+425 0.803272
+5 5 15 25
 10 10 15 15
-5 5 15 25
 10 10 0 0
-8300 0.086031
-90 80 70 60
-20 30 40 50
+20 10 25 15
+8300 3.484001
+10 10 10 10
+20 10 20 20
 10 20 30 40
-20 10 20 20
-10 10 10 10
-        P2
-425 0.044211
-20 10 20 20
-10 10 0 0
-10 10 10 10
-5 5 15 25
-8300 0.022455
-90 80 70 60
 20 30 40 50
-10 20 30 40
-20 10 20 20
-10 10 10 10
+90 80 70 60
+########## Ejecutando pruebas con 4_tricky.txt ##########
+        Recursiva
+128 0.031821
+8 8 0 0
+8 8 8 8
+128 0.014300
+8 8 0 0
+8 8 8 8
+        Iterativa
+128 0.080838
+8 8 8 8
+8 8 0 0
+128 0.050677
+8 8 8 8
+8 8 0 0
 
 Como se puede apreciar, se obtienen las mismas soluciones en cuanto a área maximizada, a pesar de que
 el order de los artículos elegidos a veces varía.
 
 En cuanto a tiempos, se aprecia cómo la solución por backtracking siempre es la mejor entre las 3 
 posibilidades. Entre la solución Recursiva y la solución Iterativa, se aprecia cómo según el caso
-de estudio se desempeña mejor un algoritmo que otro, pero se obtienen siempre resultados muy parejos.
+de estudio se desempeña mejor un algoritmo que otro.
 
 *BOLA EXTRA*
-Sí que se puede utilizar un algoritmo voraz.
+Se puede utilizar un algoritmo voraz, aunque no garantiza la solución óptima.
 
-Un heurística voraz podría ser ordenar los artículos 🎃por su área🎃 en orden descendente y luego colocar cada artículo 
-en la página en ese orden, siempre y cuando no se superponga con ningún artículo colocado previamente y que quepa en la página.
-Esta heurística se basa en la idea de que colocar los artículos más grandes primero maximizará el área total ocupada por los artículos.
+Una heurística voraz simple y efectiva sería ordenar los artículos por área dividida por el número de superposiciones con otros artículos.
+Luego, podemos iterar sobre los artículos ordenados y agregarlos a la solución si no se solapan con ningún otro artículo en la solución.
 
-En este caso, se aprecia que esta solución es realmente buena, llegado incluso a superar a la de la P2 en '2_singleArticle.txt'.
-Sin embargo, generalizando, la mejor solución de las 4 posibles es la de backtracking, aunque seguida de cerca por la voraz.
+Resultados obtenidos:
 
-Resultados:
 ########## Ejecutando pruebas con 1_prueba.txt ##########
         Voraz
-400 0.026906
-20 10 25 15
-10 10 15 15
+400 0.101714
+20 10 20 20
+10 10 10 10
 10 10 0 0
-8000 0.039061
+8000 0.044933
 90 80 70 60
 20 30 40 50
 10 20 30 40
 ########## Ejecutando pruebas con 2_singleArticle.txt ##########
         Voraz
-100 0.011385
+100 0.028384
 10 10 15 15
 ########## Ejecutando pruebas con 3_moreArticles.txt ##########
         Voraz
-425 0.066150
-20 10 25 15
-10 10 15 15
-5 5 15 25
-10 10 0 0
-8300 0.023249
-90 80 70 60
-20 30 40 50
-10 20 30 40
+425 0.055912
 20 10 20 20
 10 10 10 10
+10 10 0 0
+5 5 15 25
+8300 0.048901
+90 80 70 60
+20 30 40 50
+20 10 20 20
+10 20 30 40
+10 10 10 10
+########## Ejecutando pruebas con 4_tricky.txt ##########
+        Voraz
+100 0.046567
+10 10 0 0
+100 0.011152
+10 10 7 7
+
 
             COMPARACIÓN FINAL TIEMPOS:
 * 1_prueba.txt
-    -Recursiva: 0.068524 + 0.034672 = 0.103196
-    -Iterativa: 0.079987 + 0.045158 = 0.125145
-    -P2: 0.029705 + 0.010972 = 0.040677
-    -Voraz: 0.026906 + 0.039061 = 0.065967
+    -Recursiva: 0.309986 + 0.136958 = 0.446944
+    -Iterativa: 0.119037 + 0.174675 = 0.293712
+    -P2: 0.023537 + 0.022055 = 0.045592
+    -Voraz: 0.101714 + 0.044933 = 0.146647
 * 2_singleArticle.txt
-    -Recursiva: 0.036627
-    -Iterativa: 0.036357
-    -P2: 0.013808
-    -Voraz: 0.011385
+    -Recursiva: 0.020459
+    -Iterativa: 0.045933
+    -P2: 0.015456
+    -Voraz: 0.028384
 * 3_moreArticles.txt
-    -Recursiva: 0.131012 + 0.120370 = 0.251382
-    -Iterativa: 0.122141 + 0.086031 = 0.208172
-    -P2: 0.044211 + 0.022455 = 0.066666
-    -Voraz: 0.066150 + 0.023249 = 0.089399
+    -Recursiva: 0.387772 + 0.851605 = 1.239377
+    -Iterativa: 0.803272 + 3.484001 = 4.287273
+    -P2: 0.045272 + 0.021096 = 0.066368
+    -Voraz: 0.055912 + 0.048901 = 0.104813
+* 4_tricky.txt
+    -Recursiva: 0.031821 + 0.014300 = 0.046121
+    -Iterativa: 0.080838 + 0.050677 = 0.131515
+    -P2: 0.015366 + 0.009047
+    -Voraz: 0.046567 + 0.011152 = 0.057719
