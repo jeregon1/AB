@@ -1,13 +1,36 @@
-#!/usr/bin/env python3
-
 from time import perf_counter
 from random import shuffle
 import unittest
 import itertools
-from busca import busca, Block, Article, Solution, calculate_area, read_file
+from busca import Block, Article, Solution, read_file, busca_recursive, busca_iterative
 
 path_tests = 'pruebas/'
-test_files = ['1_prueba.txt', '3_moreArticles.txt', '4_tricky.txt']
+test_files = ['1_prueba.txt', '2_singleArticle.txt' '3_moreArticles.txt', '4_tricky.txt']
+
+def busca(block):
+   
+    block.sort_articles()
+    solution = Solution(0, [])
+
+    def busca_backtracking(i):
+        if i == block.n_articles: # Base case: all articles have been checked
+            return 
+        
+        solution.nodes_generated += 1
+        for article in block.articles[i:]:
+            if not article.overlaps(solution.articles):
+
+                new_area = calculate_area(solution.articles + [article])
+                new_area = solution.area + article.area
+                if new_area > solution.area:
+                    solution.area = new_area
+                    solution.articles.append(article)
+
+                busca_backtracking(i + 1)
+
+    # Start the recursive function in order to find the first combination of articles that maximize the area
+    busca_backtracking(0)
+    return solution
 
 class TestBuscaEfficiency(unittest.TestCase):
     def brute_force(self, block):
@@ -19,14 +42,14 @@ class TestBuscaEfficiency(unittest.TestCase):
         solution.nodes_generated = len(all_combinations)
         for combination in all_combinations:
             if all(not a.overlaps([article for article in combination if article != a]) for a in combination):
-                area = calculate_area(list(combination))
+                area = sum(a.area for a in combination)
                 if area > solution.area:
                     solution.area = area
                     solution.articles = combination
         return solution
 
     def test_busca_efficiency(self):
-        articles = [Article(10, 10, i * 15, i * 15) for i in range(5)]
+        articles = [Article(10, 10, i * 15, i * 15) for i in range(10)]
         articles.append(Article(10, 10, 5, 5))
         articles.append(Article(10, 10, 30, 30))
         articles.append(Article(10, 10, 100, 100))
@@ -42,7 +65,6 @@ class TestBuscaEfficiency(unittest.TestCase):
             busca_result = busca(block)
             busca_time = (perf_counter() - start) * 1000
 
-            print('a')
             start = perf_counter()
             brute_force_result = self.brute_force(block)
             brute_force_time = (perf_counter() - start) * 1000
