@@ -13,7 +13,7 @@ class TestBuscaEfficiency(unittest.TestCase):
     def brute_force(self, block):
         solution = Solution(0, [])
         all_combinations = []
-        for r in range(1, len(block.articles) + 1):
+        for r in range(1, block.n_articles + 1):
             all_combinations.extend(itertools.combinations(block.articles, r))
         
         solution.nodes_generated = len(all_combinations)

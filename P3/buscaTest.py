@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from time import perf_counter
 from random import shuffle
 from copy import copy
 import unittest
@@ -7,7 +6,7 @@ import itertools
 from busca import Block, Article, Solution, read_file, busca_recursive, busca_iterative, find_solution
 
 path_tests = 'pruebas/'
-test_files = ['1_prueba.txt', '3_moreArticles.txt', '4_tricky.txt']
+test_files = ['1_prueba.txt','2_singleArticle.txt', '3_moreArticles.txt', '4_tricky.txt']
 
 def busca_backtracking(block) -> Solution:
 
@@ -17,10 +16,10 @@ def busca_backtracking(block) -> Solution:
     def recursive_backtracking(i, solution_in_progress = Solution(0, [])) -> Solution:
         nonlocal nodes_generated
         if i == block.n_articles:
-            return copy(solution_in_progress)
+            return solution_in_progress
         
         nodes_generated += 1
-        best_solution_in_node = copy(solution_in_progress)
+        best_solution_in_node = Solution(solution_in_progress.area, copy(solution_in_progress.articles))
 
         for article in block.articles[i:]: # Para cada nodo hijo
 
@@ -33,7 +32,7 @@ def busca_backtracking(block) -> Solution:
             possible_solution = recursive_backtracking(i + 1, solution_in_progress)
 
             if possible_solution.area > best_solution_in_node.area: # Predicado solución
-                best_solution_in_node = possible_solution
+                best_solution_in_node = Solution(solution_in_progress.area, copy(solution_in_progress.articles))
         
             # Undo the changes to solution_in_progress
             solution_in_progress.area -= article.area
@@ -49,7 +48,7 @@ class TestBuscaEfficiency(unittest.TestCase):
     def brute_force(self, block) -> Solution:
         solution = Solution(0, [])
         all_combinations = []
-        for r in range(1, len(block.articles) + 1):
+        for r in range(1, block.n_articles + 1):
             all_combinations.extend(itertools.combinations(block.articles, r))
         
         solution.nodes_generated = len(all_combinations)

@@ -3,7 +3,7 @@
 
 import sys
 from time import perf_counter
-from copy import deepcopy, copy
+from copy import copy
 
 """
 Search algorithm with backtracking that, given:
@@ -199,10 +199,10 @@ def busca(block):
     def busca_backtracking(i, solution_in_progress = Solution(0, [])) -> Solution:
         nonlocal nodes_generated
         if i == block.n_articles:
-            return copy(solution_in_progress)
-        
+            return solution_in_progress
+
         nodes_generated += 1
-        best_solution_in_node = copy(solution_in_progress)
+        best_solution_in_node = Solution(solution_in_progress.area, copy(solution_in_progress.articles))
 
         for article in block.articles[i:]: # Para cada nodo hijo
 
@@ -215,8 +215,8 @@ def busca(block):
             possible_solution = busca_backtracking(i + 1, solution_in_progress)
 
             if possible_solution.area > best_solution_in_node.area: # Predicado solución
-                best_solution_in_node = possible_solution
-        
+                best_solution_in_node = Solution(possible_solution.area, copy(possible_solution.articles))
+
             # Undo the changes to solution_in_progress
             solution_in_progress.area -= article.area()
             solution_in_progress.articles.pop()
@@ -226,7 +226,7 @@ def busca(block):
     solution = busca_backtracking(0)
     solution.nodes_generated = nodes_generated
     return solution
-    
+
 def find_solution(block):
     time_start = perf_counter()
     solution = busca(block)
