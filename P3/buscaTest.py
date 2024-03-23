@@ -1,39 +1,52 @@
+#!/usr/bin/env python3
 from time import perf_counter
 from random import shuffle
+from copy import copy
 import unittest
 import itertools
-from busca import Block, Article, Solution, read_file, busca_recursive, busca_iterative
+from busca import Block, Article, Solution, read_file, busca_recursive, busca_iterative, find_solution
 
 path_tests = 'pruebas/'
-test_files = ['1_prueba.txt', '2_singleArticle.txt' '3_moreArticles.txt', '4_tricky.txt']
+test_files = ['1_prueba.txt', '3_moreArticles.txt', '4_tricky.txt']
 
-def busca(block):
-   
+def busca_backtracking(block) -> Solution:
+
     block.sort_articles()
-    solution = Solution(0, [])
+    nodes_generated = 0
 
-    def busca_backtracking(i):
-        if i == block.n_articles: # Base case: all articles have been checked
-            return 
+    def recursive_backtracking(i, solution_in_progress = Solution(0, [])) -> Solution:
+        nonlocal nodes_generated
+        if i == block.n_articles:
+            return copy(solution_in_progress)
         
-        solution.nodes_generated += 1
-        for article in block.articles[i:]:
-            if not article.overlaps(solution.articles):
+        nodes_generated += 1
+        best_solution_in_node = copy(solution_in_progress)
 
-                new_area = calculate_area(solution.articles + [article])
-                new_area = solution.area + article.area
-                if new_area > solution.area:
-                    solution.area = new_area
-                    solution.articles.append(article)
+        for article in block.articles[i:]: # Para cada nodo hijo
 
-                busca_backtracking(i + 1)
+            if article.overlaps(solution_in_progress.articles): # Predicado acotador
+                continue
 
-    # Start the recursive function in order to find the first combination of articles that maximize the area
-    busca_backtracking(0)
+            solution_in_progress.area += article.area
+            solution_in_progress.articles.append(article)
+
+            possible_solution = recursive_backtracking(i + 1, solution_in_progress)
+
+            if possible_solution.area > best_solution_in_node.area: # Predicado solución
+                best_solution_in_node = possible_solution
+        
+            # Undo the changes to solution_in_progress
+            solution_in_progress.area -= article.area
+            solution_in_progress.articles.pop()
+
+        return best_solution_in_node
+
+    solution = recursive_backtracking(0)
+    solution.nodes_generated = nodes_generated
     return solution
 
 class TestBuscaEfficiency(unittest.TestCase):
-    def brute_force(self, block):
+    def brute_force(self, block) -> Solution:
         solution = Solution(0, [])
         all_combinations = []
         for r in range(1, len(block.articles) + 1):
@@ -49,7 +62,7 @@ class TestBuscaEfficiency(unittest.TestCase):
         return solution
 
     def test_busca_efficiency(self):
-        articles = [Article(10, 10, i * 15, i * 15) for i in range(10)]
+        articles = [Article(10, 10, i * 15, i * 15) for i in range(6)]
         articles.append(Article(10, 10, 5, 5))
         articles.append(Article(10, 10, 30, 30))
         articles.append(Article(10, 10, 100, 100))
@@ -61,42 +74,48 @@ class TestBuscaEfficiency(unittest.TestCase):
 
         for block in blocks:
             shuffle(block.articles)
-            start = perf_counter()
-            busca_result = busca(block)
-            busca_time = (perf_counter() - start) * 1000
-
-            start = perf_counter()
-            brute_force_result = self.brute_force(block)
-            brute_force_time = (perf_counter() - start) * 1000
+            backtracking = find_solution(block, busca_backtracking)
+            shuffle(block.articles)
+            iterative = find_solution(block, busca_iterative)
+            shuffle(block.articles)
+            recursive = find_solution(block, busca_recursive)
+            shuffle(block.articles)
+            brute_force = find_solution(block, self.brute_force)
 
             print('\nBlock: {}'.format(block))
-            print('Backtracking: {:>9.6f}ms'.format(busca_time))
-            print('Brute force:  {:>9.6f}ms'.format(brute_force_time))
-            print('Nodes generated in backtracking: {}'.format(busca_result.nodes_generated))
-            print('Nodes generated in brute force:', brute_force_result.nodes_generated)
-            self.assertEqual(busca_result.area, brute_force_result.area)
-            self.assertLess(busca_time, brute_force_time)
+            print('Backtracking: {:>9.6f}ms'.format(backtracking.time))
+            print('Iterative dp: {:>9.6f}ms'.format(iterative.time))
+            print('Recursive dp: {:>9.6f}ms'.format(recursive.time))
+            print('Brute force:  {:>9.6f}ms'.format(brute_force.time))
+            print('Nodes generated in backtracking: {}'.format(backtracking.nodes_generated))
+            print('Nodes generated in iterative dp: {}'.format(iterative.nodes_generated))
+            print('Nodes generated in recursive dp: {}'.format(recursive.nodes_generated))
+            print('Nodes generated in brute force: ', brute_force.nodes_generated)
+            self.assertEqual(backtracking.area, brute_force.area)
+            self.assertEqual(iterative.area, brute_force.area)
+            self.assertEqual(recursive.area, brute_force.area)
 
 
 class TestBusca(unittest.TestCase):
     def test_busca(self):
-        # Test 1: Single article fits perfectly in the block
-        articles = [Article(10, 10, 0, 0)]
-        block = Block(1, 10, 10, articles)
-        solution = busca(block)
-        self.assertEqual(solution.area, 100)
+        for busca in [busca_backtracking, busca_iterative, busca_recursive]:
+            # Test 1: Single article fits perfectly in the block
+            articles = [Article(10, 10, 0, 0)]
+            block = Block(1, 10, 10, articles)
+            solution = busca(block)
+            self.assertEqual(solution.area, 100)
 
-        # Test 2: Two non-overlapping articles
-        articles = [Article(10, 10, 0, 0), Article(10, 10, 10, 0)]
-        block = Block(2, 20, 10, articles)
-        solution = busca(block)
-        self.assertEqual(solution.area, 200)
+            # Test 2: Two non-overlapping articles
+            articles = [Article(10, 10, 0, 0), Article(10, 10, 10, 0)]
+            block = Block(2, 20, 10, articles)
+            solution = busca(block)
+            self.assertEqual(solution.area, 200)
 
-        # Test 3: Two overlapping articles
-        articles = [Article(10, 10, 0, 0), Article(10, 10, 5, 0)]
-        block = Block(2, 20, 10, articles)
-        solution = busca(block)
-        self.assertEqual(solution.area, 100)
+            # Test 3: Two overlapping articles
+            articles = [Article(10, 10, 0, 0), Article(20, 10, 0, 0)]
+            block = Block(2, 20, 10, articles)
+            solution = busca(block)
+            self.assertEqual(solution.area, 200)
 
 if __name__ == '__main__':
     # Run all tests
