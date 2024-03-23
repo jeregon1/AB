@@ -9,9 +9,9 @@ python3 busca.py fich_entrada fich_resultados
 ```
 
 Donde:
-- fich_entrada: es el fichero de entrada donde recoge los artículos de los distintos bloques
-- fich_resultados: es el fichero de salida donde se escribirán los resultados de la búsqueda.
-Se mostrará una línea por cada bloque con el área máxima y el tiempo de ejecución de la búsqueda
+- _fich_entrada_: es el fichero de entrada donde recoge los artículos de los distintos bloques
+- _fich_resultados_: es el fichero de salida donde se escribirán los resultados de la búsqueda.
+Se mostrará por cada bloque: una línea con el área máxima y el tiempo de ejecución de la búsqueda, seguido de tantas lineas como artículos se han seleccionado para la solución.
 
 ### Ejecución de los tests
 
@@ -24,8 +24,11 @@ El script `ejecutar.sh` comprueba el correcto funcionamiento del programa busca.
     - ejecuta el programa con ese fichero
     - guarda los resultados en un fichero de salida
 - Si no:
-    - ejecuta el programa con todos los ficheros de prueba (*1_prueba.txt, 2_singleArticle.txt, 3_moreArticles.txt*)
+    - ejecuta el programa con todos los ficheros de prueba (*1_prueba.txt, 2_singleArticle.txt, 3_moreArticles.txt, 4_tricky.txt*)
     - guarda los resultados en un fichero de salida para cada fichero de prueba
-    - lanza el banco de pruebas `buscaTest.py` donde se realizan comprobaciones con casos de estudio específicos   
 
-Destacar que se imprime por pantalla información relativa a la solución de cada caso de prueba, así como el tiempo de ejecución de cada uno de ellos, comparando el **tiempo requerido** mediante el uso de <u>backtracking vs fuerza bruta</u>, junto a los **nodos generados** por cada uno de estos algoritmos.
+Destacar que se imprime por pantalla información relativa a la solución de cada caso de prueba, así como el tiempo de ejecución de cada uno de ellos, comparando el **tiempo requerido** mediante el uso de la solución <u>recursiva vs iterativa</u>. 
+
+A su vez se ha realizado una versión voraz del algoritmo, por lo tanto también aparece el **tiempo requerido** mediante el uso de la solución <u>voraz</u>.
+
+Comentar que en el fichero `experimentacion.txt` se han recogido los resultados de la experimentación realizada con los distintos algoritmos, comparando el tiempo de ejecución de cada uno de ellos, incluso con los de la práctica anterior (<u>backtracking</u>)
