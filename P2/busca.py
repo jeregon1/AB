@@ -3,6 +3,7 @@
 
 import sys
 from time import perf_counter
+from copy import deepcopy
 
 """
 Search algorithm with backtracking that, given:
@@ -76,6 +77,22 @@ class Article:
         self.x = x
         self.y = y
 
+    def area(self):
+        return self.w * self.h
+
+    """
+    Checks if an article overlaps with any other article in a list
+    """
+    def overlaps(self, articles):
+        for a in articles:
+            article_is_left = self.x + self.w <= a.x
+            article_is_right = a.x + a.w <= self.x
+            article_is_up = self.y + self.h <= a.y
+            article_is_down = a.y + a.h <= self.y
+            if not (article_is_left or article_is_right or article_is_up or article_is_down):
+                return True
+        return False
+
     def __str__(self):
         return "Article with values--> w: {}, h: {}, x: {}, y: {}".format(self.w, self.h, self.x, self.y)
 
@@ -88,6 +105,9 @@ class Block:
         self.W = W
         self.H = H
         self.articles = articles
+
+    def sort_articles(self):
+        self.articles.sort(key=lambda a: a.w * a.h, reverse=True)
 
     def __str__(self):
         articles_str = ""
@@ -122,19 +142,6 @@ def calculate_area(articles):
     for article in articles:
         area += article.w * article.h
     return area
-
-"""
-Checks if an article overlaps with any other article in a list
-"""
-def check_overlap(article, articles):
-    for a in articles:
-        article_is_left = article.x + article.w <= a.x
-        article_is_right = a.x + a.w <= article.x
-        article_is_up = article.y + article.h <= a.y
-        article_is_down = a.y + a.h <= article.y
-        if not (article_is_left or article_is_right or article_is_up or article_is_down):
-            return True
-    return False
 
 """
 Sorts a list of articles by area (w * h) in descending order
@@ -180,34 +187,49 @@ def busca(block):
     Comments: The list of articles of the solution is global to this function, so it is not necessary to return it
     """
 
-    block.articles = sort_articles(block.articles) 
-    solution = Solution(0, [])
+    block.sort_articles()
+    nodes_generated = 0
 
     """
     Recursive function that looks for the best combination of articles to maximize the area covered by them
     Parameters:
         - i: index of the article to check (number of articles checked so far)
+        - solution_in_progress: solution in the current node of the search tree
     """
-    def busca_backtracking(i):
-        if i == block.n_articles: # Base case: all articles have been checked
-            return 
+    def busca_backtracking(i, solution_in_progress = Solution(0, [])) -> Solution:
+        nonlocal nodes_generated
+        if i == block.n_articles:
+            return Solution(0, [])
         
-        solution.nodes_generated += 1
-        for article in block.articles[i:]:
-            if not check_overlap(article, solution.articles):
+        print('  ' * i, i, solution_in_progress.area)
+        nodes_generated += 1
+        best_solution_in_node = deepcopy(solution_in_progress)
 
-                new_area = calculate_area(solution.articles + [article])
-                if new_area > solution.area:
-                    solution.area = new_area
-                    solution.articles.append(article)
+        for article in block.articles[i:]: # Para cada nodo hijo
 
-                busca_backtracking(i + 1)
+            if article.overlaps(solution_in_progress.articles): # Predicado acotador
+                continue
 
-    # Start the recursive function in order to find the first combination of articles that maximize the area
-    busca_backtracking(0)
+            child_node = deepcopy(solution_in_progress)
+            child_node.area += article.area()
+            child_node.articles.append(article)
+            possible_solution = busca_backtracking(i + 1, child_node)
+
+            if possible_solution.area > best_solution_in_node.area:
+                best_solution_in_node = possible_solution
+
+        return best_solution_in_node
+
+    solution = busca_backtracking(0)
+    solution.nodes_generated = nodes_generated
     return solution
     
-
+def find_solution(block):
+    time_start = perf_counter()
+    solution = busca(block)
+    time_end = perf_counter()
+    solution.time = (time_end - time_start) * 1000
+    return solution
 
 """  
 Parameters:
@@ -220,15 +242,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     blocks = read_file(sys.argv[1])
-    solutions = []
-    # Search solution for each block timing it
-    for block in blocks:
-        time_start = perf_counter()
-        solution = busca(block)
-        time_end = perf_counter()
-        solution.time = (time_end - time_start) * 1000
-
-        solutions.append(solution)
+    solutions = [find_solution(block) for block in blocks]
     
     # Write solutions to file
     with open(sys.argv[2], "w") as f:

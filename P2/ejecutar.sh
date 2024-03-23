@@ -2,11 +2,11 @@
 
 # Script de pruebas de busca.py
 
-# Si se pasan dos argumentos, se ejecuta el script con esos argumentos
+# Si se pasan un argumento, se ejecuta el script con ese argumento como fichero de pruebas
 # Si no, se ejecutan las pruebas con los archivos de prueba
 
-if [ $# -eq 2 ]; then
-    python3 busca.py $1 $2
+if [ $# -eq 1 ]; then
+    python3 busca.py pruebas/$1 pruebas/res_$1
     exit 0
 fi
 

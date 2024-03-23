@@ -194,7 +194,7 @@ Articles can't overlap and must be inside the page.
 def busca_recursive(block) -> Solution:
     block.sort_articles()
 
-    def busca(index, articlesInSolution) -> Solution:
+    def busca(index, articlesInSolution = []) -> Solution:
         # Base case
         if index == -1:
             return Solution(0, [])
@@ -215,7 +215,7 @@ def busca_recursive(block) -> Solution:
             solution = max(solution_exclude, solution_include, key=lambda solution: solution.area)
             return solution
 
-    return busca(block.n_articles - 1, [])
+    return busca(block.n_articles - 1)
 
 """
 Iterative solution that maximizes the area covered by articles in a block and calculates the total space occupied by them.
@@ -228,7 +228,6 @@ def busca_iterative(block) -> Solution:
     # Initialize memoization table
     memo = {0: Solution(0, [])}
 
-    # Iterate over all possible subsets of articles (represented as binary numbers)
     for i in range(1, 2**n):
         memo[i] = Solution(0, [])
         for j in range(n):
@@ -256,7 +255,7 @@ def busca_iterative(block) -> Solution:
 A simple and smart greedy heuristic would be to order the articles by area divided by the number of overlaps with other articles.
 Then, we can iterate over the sorted articles and add them to the solution if they don't overlap with any other article in the solution.
 """
-def greedy_solution(block) -> Solution:
+def busca_greedy(block) -> Solution:
     # First, we sort the articles by area divided by the number of overlaps with other articles
     # Calculate the number of overlaps for each article
     overlaps = {}
@@ -277,59 +276,35 @@ def greedy_solution(block) -> Solution:
 
     return solution
 
-"""
-A simple Greedy Heuristic could be to sort the articles by their area in descending order and then place each article 
-on the page in that order, as long as it doesn't overlap with any previously placed articles and fits within the page. 
-This heuristic is based on the idea that placing larger articles first will maximize the total area occupied by the articles.
+def find_solution(block, busca_function):
+    time_start = perf_counter()
+    solution = busca_function(block) 
+    time_end = perf_counter()
+    solution.time = (time_end - time_start) * 1000
+    return solution
 
-Here is a pseudocode for the Greedy Heuristic:
-
-function greedy_solution(block):
-    sort block.articles by area in descending order
-    create an empty list selected_articles
-    for each article in block.articles:
-        if article does not overlap with any article in selected_articles and fits within the page:
-            add article to selected_articles
-    return selected_articles
-"""
-# def greedy_solution(block) -> Solution:
-#     block.sort_articles()
-#     areaTotal = block.W * block.H
-#     selected_articles = []
-#     for article in block.articles:
-#         if not article.overlaps(selected_articles) and areaTotal >= article.area:
-#             selected_articles.append(article)
-#             areaTotal -= article.area
-#     return Solution(calculate_area(selected_articles), selected_articles)
 
 """
 Parameters:
-    - [-r | -i]: option to choose between using recursive or iterative solution
+    - [-r | -i | -g]: option to choose between using recursive or iterative solution (or greedy)
     - in_file: file containing the blocks and articles
     - out_file: file to write the results
 """
 if __name__ == "__main__":
     if len(sys.argv) != 4:
-        print("Usage: python3 busca.py [-r | -i] <in_file> <out_file>")
+        print("Usage: python3 busca.py [-r | -i | -g] <in_file> <out_file>")
         sys.exit(1)
 
     option = sys.argv[1]
     if   option == "-r": busca_function = busca_recursive
     elif option == "-i": busca_function = busca_iterative
-    elif option == "-g": busca_function = greedy_solution
+    elif option == "-g": busca_function = busca_greedy
     else:
-        print("Usage: python3 busca.py [-r | -i] <in_file> <out_file>")
+        print("Usage: python3 busca.py [-r | -i | -g] <in_file> <out_file>")
         sys.exit(1)
 
     blocks = read_file(sys.argv[2])
-    solutions = []
-    # Search solution for each block timing it
-    for block in blocks:
-        time_start = perf_counter()
-        solution = busca_function(block) 
-        time_end = perf_counter()
-        solution.time = (time_end - time_start) * 1000
-        solutions.append(solution)
+    solutions = [find_solution(block, busca_function) for block in blocks]
 
     # Write recursive and iterative solutions to the file
     with open(sys.argv[3], "w") as f:
