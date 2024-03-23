@@ -3,12 +3,16 @@
 El programa está escrito en python en un solo fichero busca.py. Para ejecutarlo se debe invocar con el siguiente comando:
 
 ```shell
-python3 busca.py fich_entrada fich_resultados
+python3 busca.py [-r | -i | -g] fich_entrada fich_resultados
 # o bien
-./busca.py fich_entrada fich_resultados
+./busca.py [-r | -i | -g] fich_entrada fich_resultados
 ```
 
 Donde:
+- _-r_, _-i_ o _-g_ es la opción que se pasa al programa para indicar el algoritmo a utilizar:
+    - _-r_ para el algoritmo recursivo
+    - _-i_ para el algoritmo iterativo
+    - _-g_ para el algoritmo voraz
 - _fich_entrada_: es el fichero de entrada donde recoge los artículos de los distintos bloques
 - _fich_resultados_: es el fichero de salida donde se escribirán los resultados de la búsqueda.
 Se mostrará por cada bloque: una línea con el área máxima y el tiempo de ejecución de la búsqueda, seguido de tantas lineas como artículos se han seleccionado para la solución.
