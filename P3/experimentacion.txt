@@ -76,7 +76,7 @@ posibilidades. Entre la solución Recursiva y la solución Iterativa, se aprecia
 de estudio se desempeña mejor un algoritmo que otro.
 
 *BOLA EXTRA*
-Se puede utilizar un algoritmo voraz, aunque no garantiza la solución óptima.
+Se puede utilizar un algoritmo voraz, aunque no garantiza la solución óptima, como se ve en la prueba 4_tricky.txt.
 
 Una heurística voraz simple y efectiva sería ordenar los artículos por área dividida por el número de superposiciones con otros artículos.
 Luego, podemos iterar sobre los artículos ordenados y agregarlos a la solución si no se solapan con ningún otro artículo en la solución.
@@ -120,22 +120,22 @@ Resultados obtenidos:
 
             COMPARACIÓN FINAL TIEMPOS:
 * 1_prueba.txt
-    -Recursiva: 0.106900 + 0.106800 = 0.213700
-    -Iterativa: 0.307000 + 0.555000 = 0.862000
-    -P2: 1.223800 + 0.425000 = 1.648800
-    -Voraz: 0.058500 + 0.050300 = 0.108800
+        -Recursiva:   0.106900 +   0.106800 =   0.213700
+        -Iterativa:   0.307000 +   0.555000 =   0.862000
+        -P2:          0.259700 +   0.515500 =   0.775200
+        -Voraz:       0.058500 +   0.050300 =   0.108800
 * 2_singleArticle.txt
-    -Recursiva: 0.023800
-    -Iterativa: 0.043300
-    -P2: 0.114700
-    -Voraz: 0.018000
+        -Recursiva:   0.023800
+        -Iterativa:   0.043300
+        -P2:          0.033000
+        -Voraz:       0.018000
 * 3_moreArticles.txt
-    -Recursiva: 0.280000 + 0.581800 = 0.861800
-    -Iterativa: 0.581800 + 1.716100 = 2.297900
-    -P2: 1.916700 + 55.226800 = 57.143500
-    -Voraz: 0.091200 + 0.106200 = 0.197400
+        -Recursiva:   0.280000 +   0.581800 =   0.861800
+        -Iterativa:   0.581800 +   1.716100 =   2.297900
+        -P2:          1.624200 +   7.443200 =   9.067400
+        -Voraz:       0.091200 +   0.106200 =   0.197400
 * 4_tricky.txt
-    -Recursiva: 0.071100 + 0.037600 = 0.108700
-    -Iterativa: 0.078700 + 0.055600 = 0.134300
-    -P2: 0.212900 + 0.075900 = 0.288800
-    -Voraz: 0.059100 + 0.032400 = 0.091500
+        -Recursiva:   0.071100 +   0.037600 =   0.108700
+        -Iterativa:   0.078700 +   0.055600 =   0.134300
+        -P2:          0.075100 +   0.045600 =   0.120700
+        -Voraz:       0.059100 +   0.032400 =   0.091500
