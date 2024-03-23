@@ -193,12 +193,15 @@ Articles can't overlap and must be inside the page.
 """
 def busca_recursive(block) -> Solution:
     block.sort_articles()
+    nodes_generated = 0
 
     def busca(index, articlesInSolution = []) -> Solution:
+        nonlocal nodes_generated
         # Base case
         if index == -1:
             return Solution(0, [])
-
+        
+        nodes_generated += 1
         article = block.articles[index]
 
         # g(j-1, c)
@@ -215,7 +218,9 @@ def busca_recursive(block) -> Solution:
             solution = max(solution_exclude, solution_include, key=lambda solution: solution.area)
             return solution
 
-    return busca(block.n_articles - 1)
+    solution = busca(block.n_articles - 1)
+    solution.nodes_generated = nodes_generated
+    return solution
 
 """
 Iterative solution that maximizes the area covered by articles in a block and calculates the total space occupied by them.
@@ -224,9 +229,12 @@ Articles can't overlap and must be inside the page.
 def busca_iterative(block) -> Solution:
     block.sort_articles()
     n = block.n_articles
+    nodes_generated = 0
 
     # Initialize memoization table
     memo = {0: Solution(0, [])}
+    # memo = {{Solution(0, []) for _ in range(n)} for _ in range(2**n)}
+
 
     for i in range(1, 2**n):
         memo[i] = Solution(0, [])
@@ -238,8 +246,7 @@ def busca_iterative(block) -> Solution:
 
             article = block.articles[j]
             sol_without_j = memo[i ^ (1 << j)] # This is the solution for the subset i without the j-th article
-            # If the article overlaps with any article in the solution
-            # then we don't consider it
+            # If the article overlaps with any article in the solution then we don't consider it
             if article.overlaps(sol_without_j.articles):
                 continue
 
@@ -247,9 +254,14 @@ def busca_iterative(block) -> Solution:
             temp = Solution(sol_without_j.area + article.area, sol_without_j.articles + [article])
             if temp.area > memo[i].area:
                 memo[i] = temp
+                nodes_generated += 1 # Only count the nodes generated when it overwrites the memoization table 
 
     # Find the solution with the maximum area
-    return max(memo.values(), key=lambda solution: solution.area)
+    solution = max(memo.values(), key=lambda solution: solution.area)
+    solution.nodes_generated = nodes_generated
+    return solution
+
+
 
 """
 A simple and smart greedy heuristic would be to order the articles by area divided by the number of overlaps with other articles.
