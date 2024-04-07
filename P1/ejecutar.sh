@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script que prueba el programa huff.py
+# Script que prueba el programa huf.py
 
 # MODO DE USO
 # ./ejecutar.sh [archivo]
@@ -20,13 +20,13 @@ probar_archivo() {
     archivo=$1
 
     printf "Comprimir archivo de %'d bytes" $(wc -c $archivo | awk '{print $1}')
-    time ../huff.py $comprimir $archivo
+    time ../huf.py $comprimir $archivo
 
     # Muevo el archivo comprimido a la carpeta d (descomprimir)
     mv $archivo.huf resultados/$archivo.huf
 
     echo -n Descomprimir
-    time ../huff.py $descomprimir resultados/$archivo.huf
+    time ../huf.py $descomprimir resultados/$archivo.huf
 
     if cmp $archivo resultados/$archivo; then
         echo -e "\nArchivo $archivo es igual al descomprimido. OK"
