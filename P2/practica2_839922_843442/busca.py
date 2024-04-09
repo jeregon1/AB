@@ -1,6 +1,14 @@
 #!/mnt/c/Users/jesus/anaconda3/envs/alg/python.exe
 #!/opt/csw/bin/python3
 
+"""
+Autores: Jesús López Ansón, Javier Sin Pelayo
+Fichero: busca.py. 
+        Implementa un algoritmo de búsqueda con backtracking que, dadas las dimensiones de una 
+        página y una lista de artículos, determina los artículos a colocar en la página maximizando
+        el área total ocupada por los artículos y calcula el espacio total ocupado por ellos.
+"""
+
 import sys
 from time import perf_counter
 from copy import copy
@@ -36,15 +44,15 @@ Page example: (x,y)
 +-------------------+
 (0,H)               (W,H)
 
-Example:
-5 280 400    👈🏼 Block 1
-10 10 0 0        👈🏼 Article 1
-10 10 15 15      👈🏼 Article 2
-10 10 10 10      👈🏼 Article 3
-20 10 20 20      👈🏼 Article 4
-20 10 25 15      👈🏼 Article 5
-6 280 400    👈🏼 Block 2
-10 20 30 40
+-->Entry file example:
+5 280 400    <-- Block 1
+10 10 0 0        <-- Article 1
+10 10 15 15      <-- Article 2
+10 10 10 10      <-- Article 3
+20 10 20 20      <-- Article 4
+20 10 25 15      <-- Article 5
+6 280 400    <-- Block 2
+10 20 30 40     ...
 50 60 70 80
 20 30 40 50
 90 80 70 60
@@ -64,6 +72,9 @@ Asumptions:
 A line for each block containing 2 numbers:
     - total area occupied by the articles (in mm)
     - time needed (in milliseconds) to calculate the solution.
+
+-->Output file example:
+400 0.1875
 """
 
 
@@ -72,10 +83,10 @@ Class that represents an article
 """
 class Article:
     def __init__(self, w, h, x, y):
-        self.w = w
-        self.h = h
-        self.x = x
-        self.y = y
+        self.w = w # width
+        self.h = h # height
+        self.x = x # 'x' coordinate of the top left corner
+        self.y = y # 'y' coordinate of the top left corner
 
     def area(self):
         return self.w * self.h
@@ -93,6 +104,9 @@ class Article:
                 return True
         return False
 
+    """
+    String representation of the article
+    """
     def __str__(self):
         return "Article with values--> w: {}, h: {}, x: {}, y: {}".format(self.w, self.h, self.x, self.y)
 
@@ -101,14 +115,20 @@ Class that represents a block of articles
 """
 class Block:
     def __init__(self, n_articles, W, H, articles):
-        self.n_articles = n_articles
-        self.W = W
-        self.H = H
-        self.articles = articles
+        self.n_articles = n_articles # number of articles
+        self.W = W # page width
+        self.H = H # page height
+        self.articles = articles # list of articles
 
+    """
+    Sorts the articles by area (w * h) in descending order
+    """
     def sort_articles(self):
         self.articles.sort(key=lambda a: a.w * a.h, reverse=True)
 
+    """
+    String representation of the block
+    """
     def __str__(self):
         articles_str = ""
         for article in self.articles:
@@ -117,7 +137,7 @@ class Block:
 
 
 """
-Reads a file containing the blocks and articles and returns a list of blocks
+Reads a file containing the blocks and articles, fills the corresponding data structures, and returns a list of blocks
 """
 def read_file(file):
     blocks = []
@@ -125,29 +145,14 @@ def read_file(file):
         lines = f.readlines()
         i = 0
         while i < len(lines):
-            n, W, H = map(int, lines[i].split())
+            n, W, H = map(int, lines[i].split()) # number of articles, page width, page height
             articles = []
-            for j in range(i + 1, i + 1 + n):
+            for j in range(i + 1, i + 1 + n): # iterate over the articles of the block
                 w, h, x, y = map(int, lines[j].split())
-                articles.append(Article(w, h, x, y))
-            blocks.append(Block(n, W, H, articles))
-            i += 1 + n
+                articles.append(Article(w, h, x, y)) # add article to the list
+            blocks.append(Block(n, W, H, articles)) # add block to the list
+            i += 1 + n # move to the next block
     return blocks
-
-"""
-Calculates the area occupied by a list of articles
-"""
-def calculate_area(articles):
-    area = 0
-    for article in articles:
-        area += article.w * article.h
-    return area
-
-"""
-Sorts a list of articles by area (w * h) in descending order
-"""
-def sort_articles(articles):
-    return sorted(articles, key=lambda a: a.w * a.h, reverse=True)
 
 
 """
@@ -156,10 +161,13 @@ Class that represents the solution of the search algorithm
 class Solution:
     def __init__(self, area, articles, time = .0, nodes_generated = 0):
         self.area = area # in mm²
-        self.articles = articles
+        self.articles = articles # list of articles that maximize the area
         self.time = time # in ms
-        self.nodes_generated = nodes_generated
+        self.nodes_generated = nodes_generated # number of nodes generated
 
+    """
+    String representation of the solution. It shows the area, time, and the list of articles
+    """
     def __str__(self):
         articles_str = '\n'.join(str(article) for article in self.articles)
         return "Area: {} mm², Time: {:.6f} ms, Nodes generated: {}\n List of articles: \n-{}".format(
@@ -168,11 +176,8 @@ class Solution:
     
 """
 Backtracking function that maximizes the area covered by articles in a block and calculates the total space occupied by them.
-Articles can't overlap and must be inside the page.
-Returns the maximum area found and the list of articles that maximize it
-"""
-def busca(block):
-    """
+
+Steps followed by the algorithm:
     1. Sort articles by area (w * h) in descending order
     2. Initialize the solution as empty
     3. For each article that is not in the solution:
@@ -184,49 +189,58 @@ def busca(block):
             - Call the function recursively with the next article
     4. Return the total area occupied by the articles best so far
 
-    Comments: The list of articles of the solution is global to this function, so it is not necessary to return it
-    """
-
+Comments: 
+    - articles can't overlap and must be inside the page.
+    - the list of articles of the solution is global to this function, so it is not necessary to return it.
+Return value: maximum area found and the list of articles that maximize it.
+"""
+def busca(block):
+    # Area-based sorting
     block.sort_articles()
     nodes_generated = 0
 
     """
-    Recursive function that looks for the best combination of articles to maximize the area covered by them
+    Recursive function that looks for the best combination of articles to maximize the area covered by them.
     Parameters:
         - i: index of the article to check (number of articles checked so far)
         - solution_in_progress: solution in the current node of the search tree
     """
     def busca_backtracking(i, solution_in_progress = Solution(0, [])) -> Solution:
         nonlocal nodes_generated
+
+        # Base case: all articles have been checked
         if i == block.n_articles:
             return solution_in_progress
+        
+        nodes_generated += 1 # Increment the number of nodes generated
+        best_solution_in_node = Solution(solution_in_progress.area, copy(solution_in_progress.articles)) # Best solution in the current node
 
-        nodes_generated += 1
-        best_solution_in_node = Solution(solution_in_progress.area, copy(solution_in_progress.articles))
+        for article in block.articles[i:]: # For each son of the current node
 
-        for article in block.articles[i:]: # Para cada nodo hijo
-
-            if article.overlaps(solution_in_progress.articles): # Predicado acotador
+            if article.overlaps(solution_in_progress.articles): # Pruning predicate (Predicado acotador)
                 continue
 
             solution_in_progress.area += article.area()
             solution_in_progress.articles.append(article)
 
-            possible_solution = busca_backtracking(i + 1, solution_in_progress)
+            possible_solution = busca_backtracking(i + 1, solution_in_progress) # Recursive call
 
-            if possible_solution.area > best_solution_in_node.area: # Predicado solución
+            if possible_solution.area > best_solution_in_node.area: # Solution predicate (Predicado solución)
                 best_solution_in_node = Solution(possible_solution.area, copy(possible_solution.articles))
 
-            # Undo the changes to solution_in_progress
+            # Undo the changes to solution_in_progress to explore the next son
             solution_in_progress.area -= article.area()
             solution_in_progress.articles.pop()
 
         return best_solution_in_node
 
-    solution = busca_backtracking(0)
-    solution.nodes_generated = nodes_generated
+    solution = busca_backtracking(0) # Start the search
+    solution.nodes_generated = nodes_generated # Set the number of nodes generated
     return solution
 
+"""
+Function that finds the solution and calculates the time it takes to do so.
+"""
 def find_solution(block):
     time_start = perf_counter()
     solution = busca(block)
@@ -235,7 +249,7 @@ def find_solution(block):
     return solution
 
 """  
-Parameters:
+Parameters received by the main program:
     - in_file: file containing the blocks and articles
     - out_file: file to write the results
 """

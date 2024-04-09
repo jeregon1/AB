@@ -10,6 +10,9 @@ path_tests = 'pruebas/'
 test_files = ['1_prueba.txt', '3_moreArticles.txt', '4_tricky.txt']
 
 class TestBuscaEfficiency(unittest.TestCase):
+    """
+    Brute force algorithm to test the efficiency of the busca.py (backtracking) algorithm.
+    """
     def brute_force(self, block):
         solution = Solution(0, [])
         all_combinations = []
@@ -25,7 +28,12 @@ class TestBuscaEfficiency(unittest.TestCase):
                     solution.articles = combination
         return solution
 
+    """
+    Test the efficiency of the busca.py (backtracking) algorithm by comparing it with the brute force algorithm,
+    in terms of time and number of nodes generated.
+    """
     def test_busca_efficiency(self):
+        # Articles and block generation for the test
         articles = [Article(10, 10, i * 15, i * 15) for i in range(6)]
         articles.append(Article(10, 10, 5, 5))
         articles.append(Article(10, 10, 30, 30))

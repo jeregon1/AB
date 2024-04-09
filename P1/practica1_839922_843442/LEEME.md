@@ -1,5 +1,5 @@
 ## Organización del directrio
-En el directorio está dividido en los siguientes directorios/ficheros de interés:
+El directorio está dividido en los siguientes directorios/ficheros de interés:
 - **huf.py**: Programa principal que implementa la compresión y descompresión de ficheros mediante el algoritmo de Huffman.
 - **ejecutar.sh**: Script que ejecuta los tests del programa *huf.py*.
 - **pruebas**: directorio de tests que contiene: 
