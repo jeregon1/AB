@@ -224,7 +224,7 @@ def busca_recursive(block) -> Solution:
 
 """
 Iterative solution that maximizes the area covered by articles in a block and calculates the total space occupied by them.
-Articles can't overlap and must be inside the page.
+Articles can't overlap. The solution is calculated using a memoization table to avoid recalculating the same states multiple times. w
 """
 def busca_iterative(block) -> Solution:
     block.sort_articles()
@@ -233,27 +233,24 @@ def busca_iterative(block) -> Solution:
 
     # Initialize memoization table
     memo = {0: Solution(0, [])}
-    # memo = {{Solution(0, []) for _ in range(n)} for _ in range(2**n)}
-
 
     for i in range(1, 2**n):
         memo[i] = Solution(0, [])
-        for j in range(n):
+        for j, article in enumerate(block.articles):
             # Check if the j-th article is included in the i-th subset
             article_in_subset = ((i >> j) & 1 != 0)
             if not article_in_subset:
                 continue
 
-            article = block.articles[j]
             sol_without_j = memo[i ^ (1 << j)] # This is the solution for the subset i without the j-th article
             # If the article overlaps with any article in the solution then we don't consider it
             if article.overlaps(sol_without_j.articles):
                 continue
 
             # We check if the solution with j is better than the solution without j for the subset i
-            temp = Solution(sol_without_j.area + article.area, sol_without_j.articles + [article])
-            if temp.area > memo[i].area:
-                memo[i] = temp
+            new_area = sol_without_j.area + article.area
+            if new_area > memo[i].area:
+                memo[i] = Solution(new_area, sol_without_j.articles + [article])
                 nodes_generated += 1 # Only count the nodes generated when it overwrites the memoization table 
 
     # Find the solution with the maximum area
