@@ -3,9 +3,9 @@
 El programa está escrito en python en un solo fichero huf.py. Para ejecutarlo se debe invocar con el siguiente comando:
 
 ```shell
-python2.4 huf.py [-c|-d] fichero_entrada
+python2.4 huf.py [-c | -d] fichero_entrada
 # o bien
-./huf.py [-c|-d] fichero_entrada
+./huf.py [-c | -d] fichero_entrada
 ```
 
 Donde:
@@ -14,7 +14,7 @@ Donde:
 
 ### Ejecución de los tests
 
-El script ejecutar.sh comprueba el correcto funcionamiento del programa huf.py ejecutando las siguientes tareas:
+El script ejecutar.sh comprueba el correcto funcionamiento del programa *huf.py* ejecutando las siguientes tareas:
 - Comprimir y descomprimir el fichero de prueba
 - Comprobar que el fichero original y el descomprimido son iguales
 - Calcula el tiempo de ejecución de la compresión y descompresión

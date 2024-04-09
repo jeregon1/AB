@@ -1,17 +1,20 @@
 #!/bin/bash
 
-# Script que prueba el programa huf.py
+# Autores: Jesús López Ansón (839922), Javier Sin Pelayo (843442)
+# Funcionamiento: script que realiza pruebas sobre el programa huf.py.
+#                 Comprime y descomprime archivos de prueba y muestra el tiempo de ejecución.
+#                 Crea una carpeta 'd' para almacenar los archivos descomprimidos.
 
 # MODO DE USO
 # ./ejecutar.sh [archivo]
-# Si se pasa un argumento, se prueba el programa con ese archivo
-# Si no se pasa un argumento, se prueban los archivos de prueba
+#   - Si se pasa un argumento, se prueba el programa con ese archivo
+#   - Si no se pasa un argumento, se prueban los archivos de prueba
 
 
 comprimir="-c"
 descomprimir="-d"
 
-# Creo la carpeta d (descomprimir) si no existe
+# Cración de la carpeta 'd' (descomprimir) si no existe
 if [ ! -d d ]; then
     mkdir d
 fi
@@ -55,12 +58,12 @@ if [ $# -eq 1 ]; then
     exit 0
 fi
 
+# Si no, se prueban los archivos de prueba
 archivo1="vacio.txt"
 archivo2="uno.txt"
 archivo3="quijote.txt"
 archivo4="practica1_23-24.pdf"
 
-# Pruebo el programa con los archivos de prueba
 probar_archivo $archivo1
 probar_archivo $archivo2
 probar_archivo $archivo3
