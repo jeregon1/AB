@@ -32,7 +32,7 @@ for f in $fich_1 $fich_2 $fich_3 $fich_4; do
     cat "res_$f"
 done
 
-echo Tests:
+echo Tests adicionales:
 echo
 cd ..
 python3 buscaTest.py

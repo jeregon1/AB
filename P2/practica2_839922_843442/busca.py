@@ -1,6 +1,9 @@
 #!/mnt/c/Users/jesus/anaconda3/envs/alg/python.exe
 #!/opt/csw/bin/python3
 
+import sys
+from time import perf_counter
+from copy import copy
 """
 Autores: Jesús López Ansón, Javier Sin Pelayo
 Fichero: busca.py. 
@@ -9,9 +12,6 @@ Fichero: busca.py.
         el área total ocupada por los artículos y calcula el espacio total ocupado por ellos.
 """
 
-import sys
-from time import perf_counter
-from copy import copy
 
 """
 Search algorithm with backtracking that, given:
