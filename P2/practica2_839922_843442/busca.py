@@ -109,7 +109,8 @@ class Article:
         return "Article with values--> w: {}, h: {}, x: {}, y: {}".format(self.w, self.h, self.x, self.y)
 
     def __eq__(self, other):
-        return self.w == other.w and self.h == other.h and self.x == other.x and self.y == other.y
+        return isinstance(other,Article) and \
+            self.w == other.w and self.h == other.h and self.x == other.x and self.y == other.y
 
 """ 
 Class that represents a block of articles
@@ -206,15 +207,17 @@ def busca(block):
         - i: index of the article to check (number of articles checked so far)
         - solution_in_progress: solution in the current node of the search tree
     """
-    def busca_backtracking(i = 0, solution_in_progress = Solution(0, [])) -> Solution:
+    def busca_backtracking(i = 0, solution_in_progress = Solution(0, [])) -> 'tuple[int, list[Article]]': # Devuelve los artículos a añadir a la solución
         nonlocal nodes_generated
+        best_area = solution_in_progress.area
+        last_added_article = [solution_in_progress.articles[-1]] if solution_in_progress.articles else []
 
         # Base case: all articles have been checked
         if i == block.n_articles:
-            return solution_in_progress
+            return best_area, last_added_article
         
         nodes_generated += 1 # Increment the number of nodes generated
-        best_solution_in_node = Solution(solution_in_progress.area, copy(solution_in_progress.articles)) # Best solution in the current node
+        best_articles_to_add = [] # List of the best articles found in this node among all its children
 
         for article in block.articles[i:]: # For each son of the current node
 
@@ -224,18 +227,20 @@ def busca(block):
             solution_in_progress.area += article.area
             solution_in_progress.articles.append(article)
 
-            possible_solution = busca_backtracking(i + 1, solution_in_progress) # Recursive call
-
-            if possible_solution.area > best_solution_in_node.area: # Solution predicate (Predicado solución)
-                best_solution_in_node = Solution(possible_solution.area, copy(possible_solution.articles))
+            possible_best_area, articles_to_add = busca_backtracking(i + 1, solution_in_progress) # Recursive call
 
             # Undo the changes to solution_in_progress to explore the next son
             solution_in_progress.area -= article.area
             solution_in_progress.articles.pop()
 
-        return best_solution_in_node
+            if possible_best_area > best_area: # Solution predicate (Predicado solución)
+                best_area = possible_best_area
+                best_articles_to_add = articles_to_add
 
-    solution = busca_backtracking() # Start the search
+        return best_area, last_added_article + best_articles_to_add
+
+    solution = Solution(0, [])
+    solution.area, solution.articles = busca_backtracking()
     solution.nodes_generated = nodes_generated # Set the number of nodes generated
     return solution
 

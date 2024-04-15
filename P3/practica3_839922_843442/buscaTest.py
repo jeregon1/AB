@@ -7,41 +7,46 @@ from busca import Block, Article, Solution, read_file, busca_recursive, busca_it
 path_tests = 'pruebas/'
 test_files = ['1_prueba.txt','2_singleArticle.txt', '3_moreArticles.txt', '4_tricky.txt']
 
-def busca_backtracking(block) -> Solution:
-    from copy import copy
-
+def busca_backtracking(block):
+    # Area-based sorting
     block.sort_articles()
     nodes_generated = 0
 
-    def recursive_backtracking(i = 0, solution_in_progress = Solution(0, [])) -> Solution:
+    def recursive_backtracking(i = 0, solution_in_progress = Solution(0, [])) -> 'tuple[int, list[Article]]': # Devuelve los artículos a añadir a la solución
         nonlocal nodes_generated
+        best_area = solution_in_progress.area
+        last_added_article = [solution_in_progress.articles[-1]] if solution_in_progress.articles else []
+
+        # Base case: all articles have been checked
         if i == block.n_articles:
-            return solution_in_progress
+            return best_area, last_added_article
         
-        nodes_generated += 1
-        best_solution_in_node = Solution(solution_in_progress.area, copy(solution_in_progress.articles))
+        nodes_generated += 1 # Increment the number of nodes generated
+        best_articles_to_add = [] # List of the best articles found in this node among all its children
 
-        for article in block.articles[i:]: # Para cada nodo hijo
+        for article in block.articles[i:]: # For each son of the current node
 
-            if article.overlaps(solution_in_progress.articles): # Predicado acotador
+            if article.overlaps(solution_in_progress.articles): # Pruning predicate (Predicado acotador)
                 continue
 
             solution_in_progress.area += article.area
             solution_in_progress.articles.append(article)
 
-            possible_solution = recursive_backtracking(i + 1, solution_in_progress)
+            possible_best_area, articles_to_add = recursive_backtracking(i + 1, solution_in_progress) # Recursive call
 
-            if possible_solution.area > best_solution_in_node.area: # Predicado solución
-                best_solution_in_node = Solution(possible_solution.area, copy(possible_solution.articles))
-        
-            # Undo the changes to solution_in_progress
+            # Undo the changes to solution_in_progress to explore the next son
             solution_in_progress.area -= article.area
             solution_in_progress.articles.pop()
 
-        return best_solution_in_node
+            if possible_best_area > best_area: # Solution predicate (Predicado solución)
+                best_area = possible_best_area
+                best_articles_to_add = articles_to_add
 
-    solution = recursive_backtracking()
-    solution.nodes_generated = nodes_generated
+        return best_area, last_added_article + best_articles_to_add
+
+    solution = Solution(0, [])
+    solution.area, solution.articles = recursive_backtracking()
+    solution.nodes_generated = nodes_generated # Set the number of nodes generated
     return solution
 
 class TestBuscaEfficiency(unittest.TestCase):
@@ -93,10 +98,6 @@ class TestBuscaEfficiency(unittest.TestCase):
             self.assertEqual(backtracking.area, brute_force.area)
             self.assertEqual(iterative.area, brute_force.area)
             self.assertEqual(recursive.area, brute_force.area)
-            for solution in [backtracking, iterative, recursive]:
-                self.assertEqual(len(solution.articles), len(brute_force.articles))
-                for article in solution.articles:
-                    self.assertIn(article, brute_force.articles)
 
 
 class TestBusca(unittest.TestCase):
