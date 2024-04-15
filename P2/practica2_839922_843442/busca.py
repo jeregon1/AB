@@ -205,7 +205,7 @@ def busca(block):
         - i: index of the article to check (number of articles checked so far)
         - solution_in_progress: solution in the current node of the search tree
     """
-    def busca_backtracking(i, solution_in_progress = Solution(0, [])) -> Solution:
+    def busca_backtracking(i = 0, solution_in_progress = Solution(0, [])) -> Solution:
         nonlocal nodes_generated
 
         # Base case: all articles have been checked
@@ -234,7 +234,7 @@ def busca(block):
 
         return best_solution_in_node
 
-    solution = busca_backtracking(0) # Start the search
+    solution = busca_backtracking() # Start the search
     solution.nodes_generated = nodes_generated # Set the number of nodes generated
     return solution
 

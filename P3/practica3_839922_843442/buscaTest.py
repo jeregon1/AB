@@ -13,7 +13,7 @@ def busca_backtracking(block) -> Solution:
     block.sort_articles()
     nodes_generated = 0
 
-    def recursive_backtracking(i, solution_in_progress = Solution(0, [])) -> Solution:
+    def recursive_backtracking(i = 0, solution_in_progress = Solution(0, [])) -> Solution:
         nonlocal nodes_generated
         if i == block.n_articles:
             return solution_in_progress
@@ -40,7 +40,7 @@ def busca_backtracking(block) -> Solution:
 
         return best_solution_in_node
 
-    solution = recursive_backtracking(0)
+    solution = recursive_backtracking()
     solution.nodes_generated = nodes_generated
     return solution
 
