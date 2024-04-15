@@ -87,9 +87,7 @@ class Article:
         self.h = h # height
         self.x = x # 'x' coordinate of the top left corner
         self.y = y # 'y' coordinate of the top left corner
-
-    def area(self):
-        return self.w * self.h
+        self.area = w * h # area
 
     """
     Checks if an article overlaps with any other article in a list
@@ -124,7 +122,7 @@ class Block:
     Sorts the articles by area (w * h) in descending order
     """
     def sort_articles(self):
-        self.articles.sort(key=lambda a: a.w * a.h, reverse=True)
+        self.articles.sort(key=lambda a: a.area, reverse=True)
 
     """
     String representation of the block
@@ -220,7 +218,7 @@ def busca(block):
             if article.overlaps(solution_in_progress.articles): # Pruning predicate (Predicado acotador)
                 continue
 
-            solution_in_progress.area += article.area()
+            solution_in_progress.area += article.area
             solution_in_progress.articles.append(article)
 
             possible_solution = busca_backtracking(i + 1, solution_in_progress) # Recursive call
@@ -229,7 +227,7 @@ def busca(block):
                 best_solution_in_node = Solution(possible_solution.area, copy(possible_solution.articles))
 
             # Undo the changes to solution_in_progress to explore the next son
-            solution_in_progress.area -= article.area()
+            solution_in_progress.area -= article.area
             solution_in_progress.articles.pop()
 
         return best_solution_in_node

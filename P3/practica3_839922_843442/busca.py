@@ -128,7 +128,7 @@ class Block:
     Sorts the articles by area (w * h) in descending order
     """
     def sort_articles(self):
-        self.articles.sort(key=lambda a: a.w * a.h, reverse=True)
+        self.articles.sort(key=lambda a: a.area, reverse=True)
 
     """
     String representation of the block
