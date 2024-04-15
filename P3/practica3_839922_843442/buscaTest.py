@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from random import shuffle
-from copy import copy
 import unittest
 import itertools
 from busca import Block, Article, Solution, read_file, busca_recursive, busca_iterative, find_solution
@@ -9,6 +8,7 @@ path_tests = 'pruebas/'
 test_files = ['1_prueba.txt','2_singleArticle.txt', '3_moreArticles.txt', '4_tricky.txt']
 
 def busca_backtracking(block) -> Solution:
+    from copy import copy
 
     block.sort_articles()
     nodes_generated = 0
@@ -32,7 +32,7 @@ def busca_backtracking(block) -> Solution:
             possible_solution = recursive_backtracking(i + 1, solution_in_progress)
 
             if possible_solution.area > best_solution_in_node.area: # Predicado solución
-                best_solution_in_node = Solution(solution_in_progress.area, copy(solution_in_progress.articles))
+                best_solution_in_node = Solution(possible_solution.area, copy(possible_solution.articles))
         
             # Undo the changes to solution_in_progress
             solution_in_progress.area -= article.area
