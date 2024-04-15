@@ -53,7 +53,7 @@ class TestBuscaEfficiency(unittest.TestCase):
         
         solution.nodes_generated = len(all_combinations)
         for combination in all_combinations:
-            if all(not a.overlaps([article for article in combination if article != a]) for a in combination):
+            if all(not a.overlaps([article for article in combination if article is not a]) for a in combination):
                 area = sum(a.area for a in combination)
                 if area > solution.area:
                     solution.area = area
