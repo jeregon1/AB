@@ -4,7 +4,7 @@ from time import perf_counter
 from random import shuffle
 import unittest
 import itertools
-from busca import busca, Block, Article, Solution, calculate_area, read_file
+from busca import busca, Block, Article, Solution, read_file
 
 path_tests = 'pruebas/'
 test_files = ['1_prueba.txt', '3_moreArticles.txt', '4_tricky.txt']
@@ -22,7 +22,7 @@ class TestBuscaEfficiency(unittest.TestCase):
         solution.nodes_generated = len(all_combinations)
         for combination in all_combinations:
             if all(not a.overlaps([article for article in combination if article != a]) for a in combination):
-                area = calculate_area(list(combination))
+                area = sum([article.area() for article in combination])
                 if area > solution.area:
                     solution.area = area
                     solution.articles = combination
