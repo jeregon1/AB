@@ -386,7 +386,7 @@ error indicando la correcta invocación del programa.
 """
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("Uso: python huff.py [-c | -d] ruta_archivo")
+        print("Uso: python huf.py [-c | -d] ruta_archivo")
         sys.exit()
 
     if sys.argv[1] == '-c':
@@ -397,5 +397,5 @@ if __name__ == "__main__":
         ruta_archivo_comprimido = sys.argv[2]
         descomprimir_archivo_huffman(ruta_archivo_comprimido)
     else:
-        print("Uso: python huff.py [-c|-d] ruta_archivo")
+        print("Uso: python huf.py [-c|-d] ruta_archivo")
         sys.exit()
