@@ -60,6 +60,9 @@ class TestBuscaEfficiency(unittest.TestCase):
             print('Nodes generated in backtracking: {}'.format(busca_result.nodes_generated))
             print('Nodes generated in brute force:', brute_force_result.nodes_generated)
             self.assertEqual(busca_result.area, brute_force_result.area)
+            self.assertEqual(len(busca_result.articles), len(brute_force_result.articles))
+            for article in busca_result.articles:
+                self.assertIn(article, brute_force_result.articles)
 
 
 class TestBusca(unittest.TestCase):

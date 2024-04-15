@@ -114,6 +114,13 @@ class Article:
     def __str__(self):
         return "Article with values--> w: {}, h: {}, x: {}, y: {}".format(self.w, self.h, self.x, self.y)
 
+    def __eq__(self, other):
+        return self.w == other.w and self.h == other.h and self.x == other.x and self.y == other.y
+
+    def __hash__(self) -> int:
+        return hash((self.w, self.h, self.x, self.y))
+
+
 """ 
 Class that represents a block of articles
 """

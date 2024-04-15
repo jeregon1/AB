@@ -93,6 +93,10 @@ class TestBuscaEfficiency(unittest.TestCase):
             self.assertEqual(backtracking.area, brute_force.area)
             self.assertEqual(iterative.area, brute_force.area)
             self.assertEqual(recursive.area, brute_force.area)
+            for solution in [backtracking, iterative, recursive]:
+                self.assertEqual(len(solution.articles), len(brute_force.articles))
+                for article in solution.articles:
+                    self.assertIn(article, brute_force.articles)
 
 
 class TestBusca(unittest.TestCase):
