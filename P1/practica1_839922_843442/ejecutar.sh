@@ -19,21 +19,26 @@ if [ ! -d d ]; then
     mkdir d
 fi
 
+echo
+
 probar_archivo() {
     archivo=$1
 
-    printf "Comprimir archivo de %'d bytes" $(wc -c $archivo | awk '{print $1}')
+    printf "Comprimiendo archivo %s (%'d bytes)" "$archivo" $(wc -c "$archivo" | awk '{print $1}')
     time ../huf.py $comprimir $archivo
 
     # Muevo el archivo comprimido a la carpeta d (descomprimir)
     mv $archivo.huf resultados/$archivo.huf
 
-    echo -n Descomprimir
+    echo -n Descomprimiendo...
     time ../huf.py $descomprimir resultados/$archivo.huf
 
     if cmp $archivo resultados/$archivo; then
         echo -e "\nArchivo $archivo es igual al descomprimido. OK"
+    else
+        echo -e "\nArchivo $archivo es distinto al descomprimido. ERROR"
     fi
+    echo
 }
 
 calcular_compresion() {
@@ -46,7 +51,7 @@ calcular_compresion() {
     echo -e "\nCompresión del archivo $archivo"
     printf "Original:   %'d bytes\n" $original
     printf "Comprimido: %'d bytes\n" $comprimido
-    echo -e "El archivo comprimido ocupa un $porcentaje% del original\n"
+    echo -e "El archivo comprimido ocupa un $porcentaje% del original"
 }
 
 cd pruebas
@@ -59,17 +64,12 @@ if [ $# -eq 1 ]; then
 fi
 
 # Si no, se prueban los archivos de prueba
-archivo1="vacio.txt"
-archivo2="uno.txt"
-archivo3="quijote.txt"
-archivo4="practica1_23-24.pdf"
+files=("vacio.txt" "uno.txt" "quijote.txt" "practica1_23-24.pdf")
 
-probar_archivo $archivo1
-probar_archivo $archivo2
-probar_archivo $archivo3
-probar_archivo $archivo4
+for file in "${files[@]}"; do
+    probar_archivo "$file"
+done
 
-calcular_compresion $archivo1
-calcular_compresion $archivo2
-calcular_compresion $archivo3
-calcular_compresion $archivo4
+for file in "${files[@]}"; do
+    calcular_compresion "$file"
+done
