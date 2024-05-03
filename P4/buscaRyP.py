@@ -1,23 +1,15 @@
-#!/mnt/c/Users/jesus/anaconda3/envs/alg/python.exe
-#!/opt/csw/bin/python3
+#!/usr/bin/python3
 
-from collections import namedtuple
 import sys
 from time import perf_counter
-from queue import PriorityQueue
+import heapq
+# from queue import PriorityQueue
+# from collections import namedtuple
 
 """
 Autores: Jesús López Ansón, Javier Sin Pelayo
 Fichero: busca.py. 
-        Implementa tres algoritmo de búsqueda. Dos de programación dinámica (iterativo y recursivo) y uno voraz, 
-        que dadas las dimensiones de una página y una lista de artículos, determina los artículos a colocar en la
-        página maximizando el área total ocupada por los artículos y calcula el espacio total ocupado por ellos.
-
-        El algoritmo recursivo se basa en las ecuaciones en recurrencia, mientras que el iterativo se basa en la
-        utilización de la tabla de memoización para evitar recalcular los mismos estados múltiples veces.
-        Por norma general el algoritmo iterativo es más eficiente que el recursivo, pero en este caso, es más costoso
-        debido al cálculo de la tabla de memoización. A pesar de calcular únicamente los estados necesarios, el coste
-        de la tabla de memoización es mayor que el coste de la recursión.
+        🎃 Explicar con definición el contenido del fichero 🎃
 """
 
 
@@ -134,6 +126,9 @@ class Block:
         self.H = H # page height
         self.articles = articles # list of articles
 
+    def area(self):
+        return self.W * self.H
+
     """
     Sorts the articles by area (w * h) in descending order
     """
@@ -187,6 +182,10 @@ class Solution:
         return "Area: {} mm², Time: {:.6f} ms, Nodes generated: {}\n List of articles: \n- {}".format(
             self.area, self.time, self.nodes_generated, articles_str
         )
+    
+    def __lt__(self, other):
+        if isinstance(other, Solution):
+            return self.area < other.area
 
 
 """
@@ -202,90 +201,129 @@ Return value: Solution with the remaining area (the one not occupied by the arti
 7. Return the maximum area and the corresponding articles.
 
 """
+# def buscaRyP(block) -> Solution:
+#     # Node is a tuple (bound, area, level, articles)
+#     Node = namedtuple('Node', ['bound', 'area', 'level', 'articles'])
+
+#     def bound(node):
+#         if node.area > block.W * block.H:
+#             return 0
+#         if node.level == block.n_articles:
+#             return node.area
+#         return node.area + block.articles[node.level].area
+
+#     def create_node(level, included, articles):
+#         if included:
+#             new_article = block.articles[level]
+#             if new_article.overlaps(articles):
+#                 return None
+#             articles = articles + [new_article]
+#             area = sum(article.area for article in articles)
+#         else:
+#             area = node.area
+#         return Node(bound=bound(Node(area=area, level=level, articles=articles)), area=area, level=level, articles=articles)
+
+#     # Initialize priority queue (max heap)
+#     queue = PriorityQueue()
+#     queue.put(Node(bound=block.W * block.H, area=0, level=0, articles=[]))
+
+#     max_area = 0
+#     max_articles = []
+
+#     while not queue.empty():
+#         node = queue.get()
+#         if node.bound > max_area:
+#             # Generate child nodes
+#             level = node.level + 1
+#             if level < block.n_articles:
+#                 # Include the next article
+#                 included_node = create_node(level, True, node.articles)
+#                 if included_node and included_node.area > max_area:
+#                     max_area = included_node.area
+#                     max_articles = included_node.articles
+#                 if included_node and included_node.bound > max_area:
+#                     queue.put(included_node)
+
+#                 # Exclude the next article
+#                 excluded_node = create_node(level, False, node.articles)
+#                 if excluded_node and excluded_node.bound > max_area:
+#                     queue.put(excluded_node)
+
+#     return Solution(area=block.W * block.H - max_area, articles=max_articles)
+
+
 def buscaRyP(block) -> Solution:
-    # Node is a tuple (bound, area, level, articles)
-    Node = namedtuple('Node', ['bound', 'area', 'level', 'articles'])
 
-    def bound(node):
-        if node.area > block.W * block.H:
-            return 0
-        if node.level == block.n_articles:
-            return node.area
-        return node.area + block.articles[node.level].area
+    # nodes_generated = 0 # 🎃 implementar tema de nodos generados
 
-    def create_node(level, included, articles):
-        if included:
-            new_article = block.articles[level]
-            if new_article.overlaps(articles):
-                return None
-            articles = articles + [new_article]
-            area = sum(article.area for article in articles)
-        else:
-            area = node.area
-        return Node(bound=bound(Node(area=area, level=level, articles=articles)), area=area, level=level, articles=articles)
+    # Initialize priority queue to store partial solutions
+    pq = []
+    heapq.heapify(pq)
 
-    # Initialize priority queue (max heap)
-    queue = PriorityQueue()
-    queue.put(Node(bound=block.W * block.H, area=0, level=0, articles=[]))
+    # Initialize best solution
+    best_solution = Solution(0, [])
 
-    max_area = 0
-    max_articles = []
+    # Initial partial solution (no articles placed)
+    initial_solution = Solution(0, [], 0, 0)
+    heapq.heappush(pq, initial_solution)
 
-    while not queue.empty():
-        node = queue.get()
-        if node.bound > max_area:
-            # Generate child nodes
-            level = node.level + 1
-            if level < block.n_articles:
-                # Include the next article
-                included_node = create_node(level, True, node.articles)
-                if included_node and included_node.area > max_area:
-                    max_area = included_node.area
-                    max_articles = included_node.articles
-                if included_node and included_node.bound > max_area:
-                    queue.put(included_node)
+    # Branch and Bound search
+    while pq:
+        # Get the partial solution with the maximum potential area
+        partial_solution = heapq.heappop(pq)
 
-                # Exclude the next article
-                excluded_node = create_node(level, False, node.articles)
-                if excluded_node and excluded_node.bound > max_area:
-                    queue.put(excluded_node)
+        # Check if the partial solution is promising
+        if partial_solution.area + block.area() <= best_solution.area:
+            continue  # Prune this branch
 
-    return Solution(area=block.W * block.H - max_area, articles=max_articles)
+        # Explore all valid placements of articles
+        for article in block.articles:
+            if not article.overlaps(partial_solution.articles):
+                new_articles = partial_solution.articles + [article]
+                new_area = partial_solution.area + article.area
+                new_solution = Solution(new_area, new_articles, partial_solution.time, partial_solution.nodes_generated)
+
+                # Update best solution if needed
+                if new_solution.area > best_solution.area:
+                    best_solution = new_solution
+
+                heapq.heappush(pq, new_solution)
+
+    remaining_area = block.area() - best_solution.area
+
+    return best_solution, remaining_area
+
 
 """
 Function that finds the solution and calculates the time it takes to do so.
 """
 def find_solution(block, busca_function):
     time_start = perf_counter()
-    solution = busca_function(block) 
+    solution, remaining_area = busca_function(block)
     time_end = perf_counter()
     solution.time = (time_end - time_start) * 1000
-    return solution
+    return solution, remaining_area
 
 
 """
 Parameters:
-    - [-r]: option to choose between using recursive, iterative, or greedy solution
     - in_file: file containing the blocks and articles
     - out_file: file to write the results
 """
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        print("Usage: python3 buscaRyP.py [-r] <in_file> <out_file>")
+    if len(sys.argv) != 3:
+        print("Usage: python3 buscaRyP.py <in_file> <out_file>")
         sys.exit(1)
 
-    option = sys.argv[1]
-    if   option == "-r": busca_function = buscaRyP
-    else:
-        print("Usage: python3 buscaRyP.py [-r] <in_file> <out_file>")
-        sys.exit(1)
+    blocks = read_file(sys.argv[1])
+    solutions = [find_solution(block, buscaRyP) for block in blocks]
 
-    blocks = read_file(sys.argv[2])
-    solutions = [find_solution(block, busca_function) for block in blocks]
-
-    # Write recursive and iterative solutions to the file
-    with open(sys.argv[3], "w") as f:
-        for solution in solutions:
-            f.write("{} {:.6f}\n".format(solution.area, solution.time))
+    # Write solutions to the file
+    with open(sys.argv[2], "w") as f:
+        for solution, remaining_area in solutions:
+            area = solution.area
+            time, nodes_generated = solution.time, solution.nodes_generated
+            f.write("{} {:.6f}\n".format(area, time))
+            # f.write("{} {:.6f}\n".format(remaining_area, time))
             for article in solution.articles:
                 f.write("{} {} {} {}\n".format(article.w, article.h, article.x, article.y))
