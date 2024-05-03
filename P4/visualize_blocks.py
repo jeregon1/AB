@@ -4,7 +4,7 @@
 import sys
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from busca import read_file, Block, Article
+from P4.buscaRyP import read_file, Block, Article
 
 def visualize_block(block: Block):
     fig, ax = plt.subplots()

@@ -77,11 +77,11 @@ Asumptions:
 # Output file format:
 """
 A line for each block containing 2 numbers:
-    - total area occupied by the articles (in mm)
+    - area remaining not being occupied by the articles that maximize the area covered (in mm)
     - time needed (in milliseconds) to calculate the solution.
 
 -->Output file example:
-400 0.1875
+40 0.1875
 """
 
 """
@@ -187,6 +187,12 @@ class Solution:
         )
 
 
+def buscaRyP(block) -> Solution:
+    #TODO
+
+    return
+
+
 """
 Function that finds the solution and calculates the time it takes to do so.
 """
@@ -206,13 +212,13 @@ Parameters:
 """
 if __name__ == "__main__":
     if len(sys.argv) != 4:
-        print("Usage: python3 busca.py [-r] <in_file> <out_file>")
+        print("Usage: python3 buscaRyP.py [-r] <in_file> <out_file>")
         sys.exit(1)
 
     option = sys.argv[1]
-    if   option == "-r": busca_function = busca_TODO
+    if   option == "-r": busca_function = buscaRyP
     else:
-        print("Usage: python3 busca.py [-r] <in_file> <out_file>")
+        print("Usage: python3 buscaRyP.py [-r] <in_file> <out_file>")
         sys.exit(1)
 
     blocks = read_file(sys.argv[2])

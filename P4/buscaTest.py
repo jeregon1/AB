@@ -2,7 +2,7 @@
 from random import shuffle
 import unittest
 import itertools
-from busca import Block, Article, Solution, read_file, busca_recursive, busca_iterative, find_solution
+from P4.buscaRyP import Block, Article, Solution, read_file, busca_recursive, busca_iterative, find_solution
 
 path_tests = 'pruebas/'
 test_files = ['1_prueba.txt','2_singleArticle.txt', '3_moreArticles.txt', '4_tricky.txt']
