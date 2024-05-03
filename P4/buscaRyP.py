@@ -1,8 +1,10 @@
 #!/mnt/c/Users/jesus/anaconda3/envs/alg/python.exe
 #!/opt/csw/bin/python3
 
+from collections import namedtuple
 import sys
 from time import perf_counter
+from queue import PriorityQueue
 
 """
 Autores: Jesús López Ansón, Javier Sin Pelayo
@@ -187,11 +189,68 @@ class Solution:
         )
 
 
+"""
+Function that finds the solution using a branch and bound algorithm.
+Return value: Solution with the remaining area (the one not occupied by the articles that maximize the area covered), the list of articles and the time it takes to calculate the solution.
+
+1. Initialize a priority queue with a node that includes all articles.
+2. While the queue is not empty, pop the node with the highest area from the queue.
+3. If the node is a leaf (no more articles to consider) and its area is greater than the current maximum, update the maximum area and the corresponding articles.
+4. Otherwise, generate two children nodes: one including the next article (if it fits and doesn't overlap with the existing ones), and one excluding it.
+5. Calculate the bound (maximum possible area) for each child. If the bound is greater than the current maximum, push the child into the queue.
+6. Continue the process until the queue is empty or the maximum possible area is not greater than the current maximum.
+7. Return the maximum area and the corresponding articles.
+
+"""
 def buscaRyP(block) -> Solution:
-    #TODO
+    # Node is a tuple (bound, area, level, articles)
+    Node = namedtuple('Node', ['bound', 'area', 'level', 'articles'])
 
-    return
+    def bound(node):
+        if node.area > block.W * block.H:
+            return 0
+        if node.level == block.n_articles:
+            return node.area
+        return node.area + block.articles[node.level].area
 
+    def create_node(level, included, articles):
+        if included:
+            new_article = block.articles[level]
+            if new_article.overlaps(articles):
+                return None
+            articles = articles + [new_article]
+            area = sum(article.area for article in articles)
+        else:
+            area = node.area
+        return Node(bound=bound(Node(area=area, level=level, articles=articles)), area=area, level=level, articles=articles)
+
+    # Initialize priority queue (max heap)
+    queue = PriorityQueue()
+    queue.put(Node(bound=block.W * block.H, area=0, level=0, articles=[]))
+
+    max_area = 0
+    max_articles = []
+
+    while not queue.empty():
+        node = queue.get()
+        if node.bound > max_area:
+            # Generate child nodes
+            level = node.level + 1
+            if level < block.n_articles:
+                # Include the next article
+                included_node = create_node(level, True, node.articles)
+                if included_node and included_node.area > max_area:
+                    max_area = included_node.area
+                    max_articles = included_node.articles
+                if included_node and included_node.bound > max_area:
+                    queue.put(included_node)
+
+                # Exclude the next article
+                excluded_node = create_node(level, False, node.articles)
+                if excluded_node and excluded_node.bound > max_area:
+                    queue.put(excluded_node)
+
+    return Solution(area=block.W * block.H - max_area, articles=max_articles)
 
 """
 Function that finds the solution and calculates the time it takes to do so.
