@@ -254,8 +254,6 @@ Return value: Solution with the remaining area (the one not occupied by the arti
 
 def buscaRyP(block) -> Solution:
 
-    # nodes_generated = 0 # 🎃 implementar tema de nodos generados
-
     # Initialize priority queue to store partial solutions
     pq = []
     heapq.heapify(pq)
@@ -281,7 +279,8 @@ def buscaRyP(block) -> Solution:
             if not article.overlaps(partial_solution.articles):
                 new_articles = partial_solution.articles + [article]
                 new_area = partial_solution.area + article.area
-                new_solution = Solution(new_area, new_articles, partial_solution.time, partial_solution.nodes_generated)
+                new_nodes_generated = partial_solution.nodes_generated + 1
+                new_solution = Solution(new_area, new_articles, partial_solution.time, new_nodes_generated)
 
                 # Update best solution if needed
                 if new_solution.area > best_solution.area:
