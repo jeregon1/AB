@@ -166,7 +166,8 @@ def find_solution(block, busca_function):
     solution.time = (time_end - time_start) * 1000
     return solution
 
-
+# 🎃Importante🎃: una vez se compruebe que es correcto el algoritmo,
+# poner área restante de la página en lugar de área ocupada (como en Ramificación y Poda) 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         print("Usage: python3 buscaLP.py <in_file> <out_file>")
@@ -175,10 +176,6 @@ if __name__ == "__main__":
     blocks = read_file(sys.argv[1])
 
     solutions = [find_solution(block, solve_LP) for block in blocks]
-
-    # time_start = perf_counter()
-    # solutions = [solve_LP(block) for block in blocks]
-    # time_end = perf_counter()
 
     # Write solutions to the file
     with open(sys.argv[2], "w") as f:
