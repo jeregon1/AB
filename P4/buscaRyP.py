@@ -3,7 +3,8 @@
 import sys
 from time import perf_counter
 import heapq
-# from queue import PriorityQueue
+from queue import PriorityQueue
+from typing import Tuple
 # from collections import namedtuple
 
 """
@@ -187,88 +188,24 @@ class Solution:
         if isinstance(other, Solution):
             return self.area < other.area
 
-
-"""
-Function that finds the solution using a branch and bound algorithm.
-Return value: Solution with the remaining area (the one not occupied by the articles that maximize the area covered), the list of articles and the time it takes to calculate the solution.
-
-1. Initialize a priority queue with a node that includes all articles.
-2. While the queue is not empty, pop the node with the highest area from the queue.
-3. If the node is a leaf (no more articles to consider) and its area is greater than the current maximum, update the maximum area and the corresponding articles.
-4. Otherwise, generate two children nodes: one including the next article (if it fits and doesn't overlap with the existing ones), and one excluding it.
-5. Calculate the bound (maximum possible area) for each child. If the bound is greater than the current maximum, push the child into the queue.
-6. Continue the process until the queue is empty or the maximum possible area is not greater than the current maximum.
-7. Return the maximum area and the corresponding articles.
-
-"""
-# def buscaRyP(block) -> Solution:
-#     # Node is a tuple (bound, area, level, articles)
-#     Node = namedtuple('Node', ['bound', 'area', 'level', 'articles'])
-
-#     def bound(node):
-#         if node.area > block.W * block.H:
-#             return 0
-#         if node.level == block.n_articles:
-#             return node.area
-#         return node.area + block.articles[node.level].area
-
-#     def create_node(level, included, articles):
-#         if included:
-#             new_article = block.articles[level]
-#             if new_article.overlaps(articles):
-#                 return None
-#             articles = articles + [new_article]
-#             area = sum(article.area for article in articles)
-#         else:
-#             area = node.area
-#         return Node(bound=bound(Node(area=area, level=level, articles=articles)), area=area, level=level, articles=articles)
-
-#     # Initialize priority queue (max heap)
-#     queue = PriorityQueue()
-#     queue.put(Node(bound=block.W * block.H, area=0, level=0, articles=[]))
-
-#     max_area = 0
-#     max_articles = []
-
-#     while not queue.empty():
-#         node = queue.get()
-#         if node.bound > max_area:
-#             # Generate child nodes
-#             level = node.level + 1
-#             if level < block.n_articles:
-#                 # Include the next article
-#                 included_node = create_node(level, True, node.articles)
-#                 if included_node and included_node.area > max_area:
-#                     max_area = included_node.area
-#                     max_articles = included_node.articles
-#                 if included_node and included_node.bound > max_area:
-#                     queue.put(included_node)
-
-#                 # Exclude the next article
-#                 excluded_node = create_node(level, False, node.articles)
-#                 if excluded_node and excluded_node.bound > max_area:
-#                     queue.put(excluded_node)
-
-#     return Solution(area=block.W * block.H - max_area, articles=max_articles)
-
-
-def buscaRyP(block) -> Solution:
+# 🎃 Optimized solution (original down below commented)
+def buscaRyP(block) -> Tuple[Solution, int]:
 
     # Initialize priority queue to store partial solutions
-    pq = []
-    heapq.heapify(pq)
+    pq = PriorityQueue()
 
     # Initialize best solution
     best_solution = Solution(0, [])
 
     # Initial partial solution (no articles placed)
     initial_solution = Solution(0, [], 0, 0)
-    heapq.heappush(pq, initial_solution)
+    # The priority is set by the area (negative to get the maximum area first) because priority queue returns the smallest element first
+    pq.put((-initial_solution.area, initial_solution)) 
 
     # Branch and Bound search
-    while pq:
+    while not pq.empty():
         # Get the partial solution with the maximum potential area
-        partial_solution = heapq.heappop(pq)
+        partial_solution = pq.get()[1]
 
         # Check if the partial solution is promising
         if partial_solution.area + block.area() <= best_solution.area:
@@ -276,21 +213,61 @@ def buscaRyP(block) -> Solution:
 
         # Explore all valid placements of articles
         for article in block.articles:
+            new_nodes_generated = partial_solution.nodes_generated + 1
             if not article.overlaps(partial_solution.articles):
                 new_articles = partial_solution.articles + [article]
                 new_area = partial_solution.area + article.area
-                new_nodes_generated = partial_solution.nodes_generated + 1
                 new_solution = Solution(new_area, new_articles, partial_solution.time, new_nodes_generated)
 
                 # Update best solution if needed
                 if new_solution.area > best_solution.area:
                     best_solution = new_solution
 
-                heapq.heappush(pq, new_solution)
+                pq.put((-new_solution.area, new_solution))
 
     remaining_area = block.area() - best_solution.area
 
     return best_solution, remaining_area
+
+# def buscaRyP(block) -> Solution:
+
+#     # Initialize priority queue to store partial solutions
+#     pq = []
+#     heapq.heapify(pq)
+
+#     # Initialize best solution
+#     best_solution = Solution(0, [])
+
+#     # Initial partial solution (no articles placed)
+#     initial_solution = Solution(0, [], 0, 0)
+#     heapq.heappush(pq, initial_solution)
+
+#     # Branch and Bound search
+#     while pq:
+#         # Get the partial solution with the maximum potential area
+#         partial_solution = heapq.heappop(pq)
+
+#         # Check if the partial solution is promising
+#         if partial_solution.area + block.area() <= best_solution.area:
+#             continue  # Prune this branch
+
+#         # Explore all valid placements of articles
+#         for article in block.articles:
+#             if not article.overlaps(partial_solution.articles):
+#                 new_articles = partial_solution.articles + [article]
+#                 new_area = partial_solution.area + article.area
+#                 new_nodes_generated = partial_solution.nodes_generated + 1
+#                 new_solution = Solution(new_area, new_articles, partial_solution.time, new_nodes_generated)
+
+#                 # Update best solution if needed
+#                 if new_solution.area > best_solution.area:
+#                     best_solution = new_solution
+
+#                 heapq.heappush(pq, new_solution)
+
+#     remaining_area = block.area() - best_solution.area
+
+#     return best_solution, remaining_area
 
 
 """
@@ -298,10 +275,15 @@ Function that finds the solution and calculates the time it takes to do so.
 """
 def find_solution(block, busca_function):
     time_start = perf_counter()
-    solution, remaining_area = busca_function(block)
+    if busca_function == buscaRyP:
+        solution, remaining_area = busca_function(block)
+    else:
+        solution = busca_function(block)
     time_end = perf_counter()
     solution.time = (time_end - time_start) * 1000
-    return solution, remaining_area
+    if busca_function == buscaRyP:
+        return solution, remaining_area    
+    return solution
 
 
 """
@@ -322,7 +304,7 @@ if __name__ == "__main__":
         for solution, remaining_area in solutions:
             area = solution.area
             time, nodes_generated = solution.time, solution.nodes_generated
-            f.write("{} {:.6f}\n".format(area, time))
-            # f.write("{} {:.6f}\n".format(remaining_area, time))
+            # f.write("{} {:.6f}\n".format(area, time))
+            f.write("{} {:.6f}\n".format(remaining_area, time))
             for article in solution.articles:
                 f.write("{} {} {} {}\n".format(article.w, article.h, article.x, article.y))
