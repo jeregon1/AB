@@ -270,7 +270,6 @@ if __name__ == "__main__":
     # Write solutions to file
     with open(sys.argv[2], "w") as f:
         for solution in solutions:
-            f.write("{} {:.6f}".format(solution.area, solution.time))
+            f.write("{} {:.6f}\n".format(solution.area, solution.time))
             for article in solution.articles:
-                f.write("\n{} {} {} {}".format(article.w, article.h, article.x, article.y))
-            f.write("\n")
+                f.write(" {} {} {} {}\n".format(article.w, article.h, article.x, article.y))

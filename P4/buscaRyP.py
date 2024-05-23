@@ -307,4 +307,4 @@ if __name__ == "__main__":
             # f.write("{} {:.6f}\n".format(area, time))
             f.write("{} {:.6f}\n".format(remaining_area, time))
             for article in solution.articles:
-                f.write("{} {} {} {}\n".format(article.w, article.h, article.x, article.y))
+                f.write(" {} {} {} {}\n".format(article.w, article.h, article.x, article.y))

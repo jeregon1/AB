@@ -340,4 +340,4 @@ if __name__ == "__main__":
         for solution in solutions:
             f.write("{} {:.6f}\n".format(solution.area, solution.time))
             for article in solution.articles:
-                f.write("{} {} {} {}\n".format(article.w, article.h, article.x, article.y))
+                f.write(" {} {} {} {}\n".format(article.w, article.h, article.x, article.y))
