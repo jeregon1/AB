@@ -4,9 +4,9 @@
 import sys
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from P4.buscaRyP import read_file, Block, Article
+from buscaRyP import read_file
 
-def visualize_block(block: Block):
+def visualize_block(block):
     fig, ax = plt.subplots()
 
     # Create a rectangle for each article in the block

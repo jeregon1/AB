@@ -3,13 +3,12 @@
 import sys
 from time import perf_counter
 import heapq
-from queue import PriorityQueue
-from typing import Tuple
+from queue import PriorityQueue, LifoQueue, Queue
 # from collections import namedtuple
 
 """
 Autores: Jesús López Ansón, Javier Sin Pelayo
-Fichero: busca.py. 
+Fichero: busca.py
         🎃 Explicar con definición el contenido del fichero 🎃
 """
 
@@ -62,7 +61,7 @@ Page example: (x,y)
 50 50 40 40
 
 
-Asumptions:
+Assumptions:
     - There is at least one block
     - There is at least one article in each block
     - The coordinates and dimensions of the articles are positive integers
@@ -102,6 +101,10 @@ class Article:
             if not (article_is_left or article_is_right or article_is_up or article_is_down):
                 return True
         return False
+    
+    @staticmethod
+    def list_area(list) -> int:
+        return sum(article.area for article in list)
 
     """
     String representation of the article
@@ -126,15 +129,8 @@ class Block:
         self.W = W # page width
         self.H = H # page height
         self.articles = articles # list of articles
+        self.area = self.W * self.H # area of the block
 
-    def area(self):
-        return self.W * self.H
-
-    """
-    Sorts the articles by area (w * h) in descending order
-    """
-    def sort_articles(self):
-        self.articles.sort(key=lambda a: a.area, reverse=True)
 
     """
     String representation of the block
@@ -149,7 +145,7 @@ class Block:
 """
 Reads a file containing the blocks and articles and returns a list of blocks
 """
-def read_file(file):
+def read_file(file) :
     blocks = []
     with open(file, "r") as f:
         lines = f.readlines()
@@ -169,120 +165,77 @@ def read_file(file):
 Class that represents the solution of the search algorithm
 """
 class Solution:
-    def __init__(self, area, articles, time = .0, nodes_generated = 0):
+    def __init__(self, area, articles, block_area, remaining_articles = set(), time = .0, nodes_generated = 0):
+        # assert sum(article.area for article in articles) == area
+        # assert area <= block_area
+
         self.area = area # in mm²
-        self.articles = articles # list of articles that maximize the area
+        self.articles = set(articles) # list of articles that maximize the area
+        self.block_area = block_area # in mm²
+        self.remaining_articles = remaining_articles # set of articles that have been checked
         self.time = time # in ms
         self.nodes_generated = nodes_generated # number of nodes generated
 
-    """
-    String representation of the solution. It shows the area, time, and the list of articles
-    """
-    def __str__(self):
-        articles_str = '\n- '.join(str(article) for article in self.articles)
-        return "Area: {} mm², Time: {:.6f} ms, Nodes generated: {}\n List of articles: \n- {}".format(
-            self.area, self.time, self.nodes_generated, articles_str
-        )
-    
+    def remaining_area(self):
+        return self.block_area - self.area
+
     def __lt__(self, other):
         if isinstance(other, Solution):
-            return self.area < other.area
+            return self.remaining_area() < other.remaining_area()
+        return NotImplemented
 
-# 🎃 Optimized solution (original down below commented)
-def buscaRyP(block) -> Tuple[Solution, int]:
 
-    # Initialize priority queue to store partial solutions
-    pq = PriorityQueue()
+def buscaRyP(block: Block) -> Solution:
 
-    # Initialize best solution
-    best_solution = Solution(0, [])
+    nodes_generated = 0
 
-    # Initial partial solution (no articles placed)
-    initial_solution = Solution(0, [], 0, 0)
-    # The priority is set by the area (negative to get the maximum area first) because priority queue returns the smallest element first
-    pq.put((-initial_solution.area, initial_solution)) 
+    # Initialize LIFO queue to store partial solutions
+    # pq = Queue()
+    pq = LifoQueue()
+    # pq = PriorityQueue()
+
+    # The priority is set by the articles area in the solution
+    initial_solution = Solution(0, [], block.area, remaining_articles = set(block.articles))
+    best_solution = initial_solution
+    pq.put(initial_solution)  # Put the initial solution with index 0
 
     # Branch and Bound search
     while not pq.empty():
-        # Get the partial solution with the maximum potential area
-        partial_solution = pq.get()[1]
+        partial_solution = pq.get()  # Partial solution with minimu
+        
+        # New articles that overlap with the current partial solution
+        overlapping_articles = {a for a in partial_solution.remaining_articles if a.overlaps(partial_solution.articles)}
 
-        # Check if the partial solution is promising
-        if partial_solution.area + block.area() <= best_solution.area:
-            continue  # Prune this branch
+        # Explore all valid placements of articles still not looked at
+        for article in partial_solution.remaining_articles - overlapping_articles:
 
-        # Explore all valid placements of articles
-        for article in block.articles:
-            new_nodes_generated = partial_solution.nodes_generated + 1
-            if not article.overlaps(partial_solution.articles):
-                new_articles = partial_solution.articles + [article]
-                new_area = partial_solution.area + article.area
-                new_solution = Solution(new_area, new_articles, partial_solution.time, new_nodes_generated)
+            nodes_generated += 1
+            new_solution = Solution(partial_solution.area + article.area, partial_solution.articles | {article}, block.area)
+            new_solution.remaining_articles = set(block.articles) - (overlapping_articles | new_solution.articles)
+        
+            # Check if the partial solution is not promising, 
+            if new_solution.area + Article.list_area(new_solution.remaining_articles) <= best_solution.area:
+                continue  # Prune this branch
 
-                # Update best solution if needed
-                if new_solution.area > best_solution.area:
-                    best_solution = new_solution
+            # Update best solution if needed
+            if new_solution.area > best_solution.area:
+                best_solution = new_solution
 
-                pq.put((-new_solution.area, new_solution))
+            pq.put(new_solution)  # Put the solution tuple with the index
 
-    remaining_area = block.area() - best_solution.area
+    best_solution.nodes_generated = nodes_generated
 
-    return best_solution, remaining_area
-
-# def buscaRyP(block) -> Solution:
-
-#     # Initialize priority queue to store partial solutions
-#     pq = []
-#     heapq.heapify(pq)
-
-#     # Initialize best solution
-#     best_solution = Solution(0, [])
-
-#     # Initial partial solution (no articles placed)
-#     initial_solution = Solution(0, [], 0, 0)
-#     heapq.heappush(pq, initial_solution)
-
-#     # Branch and Bound search
-#     while pq:
-#         # Get the partial solution with the maximum potential area
-#         partial_solution = heapq.heappop(pq)
-
-#         # Check if the partial solution is promising
-#         if partial_solution.area + block.area() <= best_solution.area:
-#             continue  # Prune this branch
-
-#         # Explore all valid placements of articles
-#         for article in block.articles:
-#             if not article.overlaps(partial_solution.articles):
-#                 new_articles = partial_solution.articles + [article]
-#                 new_area = partial_solution.area + article.area
-#                 new_nodes_generated = partial_solution.nodes_generated + 1
-#                 new_solution = Solution(new_area, new_articles, partial_solution.time, new_nodes_generated)
-
-#                 # Update best solution if needed
-#                 if new_solution.area > best_solution.area:
-#                     best_solution = new_solution
-
-#                 heapq.heappush(pq, new_solution)
-
-#     remaining_area = block.area() - best_solution.area
-
-#     return best_solution, remaining_area
+    return best_solution
 
 
 """
 Function that finds the solution and calculates the time it takes to do so.
 """
-def find_solution(block, busca_function):
+def find_solution(block: Block, busca_function) -> Solution:
     time_start = perf_counter()
-    if busca_function == buscaRyP:
-        solution, remaining_area = busca_function(block)
-    else:
-        solution = busca_function(block)
+    solution = busca_function(block)
     time_end = perf_counter()
     solution.time = (time_end - time_start) * 1000
-    if busca_function == buscaRyP:
-        return solution, remaining_area    
     return solution
 
 
@@ -301,10 +254,8 @@ if __name__ == "__main__":
 
     # Write solutions to the file
     with open(sys.argv[2], "w") as f:
-        for solution, remaining_area in solutions:
-            area = solution.area
-            time, nodes_generated = solution.time, solution.nodes_generated
-            # f.write("{} {:.6f}\n".format(area, time))
-            f.write("{} {:.6f}\n".format(remaining_area, time))
+        for solution in solutions:
+            f.write("{} {:.6f} {}\n".format(solution.area, solution.time, solution.nodes_generated))
+            # f.write("{} {:.6f}\n".format(solution.remaining_area, solution.time))
             for article in solution.articles:
                 f.write(" {} {} {} {}\n".format(article.w, article.h, article.x, article.y))
