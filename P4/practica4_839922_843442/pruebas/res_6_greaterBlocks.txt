@@ -1,0 +1,11 @@
+# Resultado quitando el segundo bloque de 20 artículos 
+(porque básicamente si se deja o se prueba por separado, peta, no es capaz de procesarlo)
+
+30583 7771.541046
+29 38 162 226
+46 99 395 113
+86 51 48 224
+37 92 266 188
+50 28 378 66
+92 73 203 83
+97 93 63 127
